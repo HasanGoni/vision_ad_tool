@@ -1,0 +1,9 @@
+project:
+  output-dir: _docs
+
+website:
+  title: "vision_ad_tool"
+  site-url: "https://HasanGoni.github.io/vision_ad_tool"
+  description: "Anomaly detection for images"
+  repo-branch: main
+  repo-url: "https://github.com/HasanGoni/vision_ad_tool"
