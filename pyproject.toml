@@ -30,6 +30,6 @@ dependencies = [
     "torchaudio>=2.9.0",
 ]
 
-[[tool.uv.index]]
-url = "https://artifactory.intra.infineon.com/artifactory/api/pypi/pypi-pypi-org/simple"
-default = true
+#[[tool.uv.index]]
+#url = "https://artifactory.intra.infineon.com/artifactory/api/pypi/pypi-pypi-org/simple"
+#default = true
