@@ -1,0 +1,137 @@
+# Cursor Rules: Jeremy Howard Style + Polya's Problem-Solving Framework
+
+## Core Principles
+
+### 1. Progressive Complexity - Simple to Complex
+- **Start Simple**: Begin with the simplest possible implementation that works
+- **Incremental Enhancement**: Add features one at a time, testing each step
+- **Single Responsibility**: Each function does exactly one thing well
+- **Test Immediately**: Test each function with real data before building on it
+- **Readable Code**: Write code that reads like natural language - prefer explicit over clever
+
+### 2. Jeremy Howard / FastAI Coding Style
+- **Fastai-style Documentation**: Every function should have clear docstrings with examples
+- **Test-Driven Development**: Test each function immediately with real data
+- **Explicit Over Implicit**: Make code intentions clear through naming and structure
+- **Minimal Dependencies**: Use only what's necessary
+- **Progressive Disclosure**: Start with simple usage, add complexity as needed
+
+## Polya's Four-Step Problem-Solving Framework
+
+When solving any problem, follow these steps:
+
+### Step 1: Understand the Problem
+- Clearly identify what you're being asked to do
+- Gather all available information
+- Identify constraints and limitations
+- Restate the problem in your own words
+- Create visual representations where helpful
+- Verify you have sufficient information
+
+### Step 2: Devise a Plan
+- Search for patterns
+- Draw on similar problems you've solved
+- Break down complex problems into manageable parts
+- Consider working backward from the goal
+- Look for ways to simplify the problem
+- List possible strategies
+- Identify available tools and resources
+
+### Step 3: Carry Out the Plan
+- Execute your strategy systematically
+- Verify each step
+- Document your attempts
+- Be prepared to start over with a new approach if needed
+- Maintain organized records of your process
+
+### Step 4: Look Back and Reflect
+- Evaluate the reasonableness of your solution
+- Verify your results
+- Consider alternative approaches
+- Extract lessons learned
+- Consider broader applications
+- Identify potential improvements for future attempts
+
+## Key Heuristic Strategies
+
+1. **Analogy**: Find similar problems and patterns, drawing on past experience
+2. **Decomposition**: Break complex problems into smaller, manageable parts
+3. **Generalization and Specialization**: Identify broad principles while testing specific cases
+4. **Working Backwards**: Start from the desired outcome and trace steps backward
+5. **Auxiliary Elements**: Add helpful constructions, diagrams, notation, or intermediate goals
+
+## Coding Guidelines
+
+### Function Design
+- Start with the simplest possible function signature
+- Add parameters only when needed
+- Use type hints with fastai-style annotations (inline comments for complex types)
+- Include docstrings with examples showing usage
+- Test immediately with real data
+
+### Code Structure
+```python
+# Example: Start simple, then enhance
+# Step 1: Basic function
+def process_image(img_path):
+    """Load and return image."""
+    return Image.open(img_path)
+
+# Step 2: Add validation
+def process_image(img_path):
+    """Load and return image, validating it exists."""
+    if not Path(img_path).exists():
+        raise FileNotFoundError(f"Image not found: {img_path}")
+    return Image.open(img_path)
+
+# Step 3: Add processing
+def process_image(img_path, resize=None):
+    """Load, optionally resize, and return image."""
+    # ... validation ...
+    img = Image.open(img_path)
+    if resize:
+        img = img.resize(resize)
+    return img
+```
+
+### Documentation Style
+- Use fastai-style docstrings with inline type annotations
+- Include examples in docstrings
+- Show usage patterns, not just API
+- Document the "why" not just the "what"
+
+### Testing Approach
+- Test each function immediately after writing it
+- Use real data, not just synthetic examples
+- Test edge cases as you encounter them
+- Refactor when tests reveal issues
+
+## Problem-Solving Workflow
+
+1. **Understand**: Read the problem carefully. What's the simplest version that would be useful?
+2. **Plan**: Break it into smallest possible pieces. What's the minimal function that does one thing?
+3. **Implement**: Write the simplest version first. Test it. Then enhance.
+4. **Reflect**: Does it work? Can it be simpler? What did you learn?
+
+## When Writing Code
+
+1. ✅ Start with simplest possible implementation
+2. ✅ Test each function immediately with real data
+3. ✅ Use fastai-style documentation with examples
+4. ✅ Break complex functions into smaller, single-purpose functions
+5. ✅ Prefer explicit over clever
+6. ✅ Document the "why" not just the "what"
+7. ✅ Refactor when you see patterns or complexity
+
+## When Solving Problems
+
+1. ✅ Understand: What's the simplest version that works?
+2. ✅ Plan: What are the smallest pieces I can build?
+3. ✅ Implement: Build one piece, test it, then move to the next
+4. ✅ Reflect: Can this be simpler? What patterns emerged?
+
+## References
+
+- Polya's "How to Solve It": https://gist.github.com/jph00/d60301884c56fe063101a7cc6193b3af
+- Jeremy Howard's fastai coding style and teaching philosophy
+

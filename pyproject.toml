@@ -1,5 +1,5 @@
 [project]
-name="be-vision-ad-tools"
+name="vision_ad_tool"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
