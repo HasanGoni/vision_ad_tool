@@ -1,0 +1,164 @@
+FUNCTION CALL HIERARCHY - ANOMALY SCORE ORGANIZER
+==================================================
+
+MAIN WORKFLOW FUNCTION (Entry Point)
+└── predict_and_organize_by_score (Cell 48)
+    │
+    ├── STEP 0: Create Image Index
+    │   └── create_image_index_dataframe
+    │       └── Reads image_list_file → Creates DataFrame
+    │
+    ├── STEP 1: Run Predictions (EXTERNAL)
+    │   └── predict_image_list_from_file_enhanced
+    │       └── Returns: prediction_results with image_path & anomaly_score
+    │
+    ├── STEP 2: Organize Images by Score
+    │   └── organize_images_by_score
+    │       │
+    │       ├── Setup Phase
+    │       │   ├── create_score_folders
+    │       │   │   └── Creates folders for each threshold
+    │       │   │
+    │       │   └── initialize_folder_stats
+    │       │       └── Initializes: {folder_name: {'count': 0, 'images': [], 'scores': []}}
+    │       │
+    │       ├── Processing Phase (LOOP: for each prediction_result)
+    │       │   ├── process_single_image_result
+    │       │   │   │
+    │       │   │   ├── validate_prediction_result
+    │       │   │   │   └── Extracts: image_path, anomaly_score
+    │       │   │   │
+    │       │   │   ├── save_image_by_score
+    │       │   │   │   │
+    │       │   │   │   ├── get_image_parent_folder
+    │       │   │   │   │   └── Extracts parent folder name from path
+    │       │   │   │   │
+    │       │   │   │   ├── determine_score_folder
+    │       │   │   │   │   └── normalize_score_thresholds
+    │       │   │   │   │       └── Sorts thresholds, returns default if None
+    │       │   │   │   │
+    │       │   │   │   ├── build_target_folder_path
+    │       │   │   │   │   └── Combines: output_dir/parent_folder/folder_name
+    │       │   │   │   │
+    │       │   │   │   └── copy_or_move_file
+    │       │   │   │       └── Copies or moves file to destination
+    │       │   │   │
+    │       │   │   └── determine_score_folder (again for return value)
+    │       │   │       └── normalize_score_thresholds
+    │       │   │
+    │       │   └── update_folder_stats
+    │       │       └── Updates: count++, images.append(), scores.append()
+    │       │
+    │       └── Finalization Phase
+    │           ├── save_all_folder_metadata (if save_metadata=True)
+    │           │   │
+    │           │   └── LOOP: for each folder with images
+    │           │       ├── create_folder_metadata
+    │           │       │   └── Creates dict with: threshold, count, avg/min/max scores, images
+    │           │       │
+    │           │       └── save_folder_metadata
+    │           │           └── Saves metadata to JSON file
+    │           │
+    │           ├── print_organization_summary
+    │           │   └── Prints summary statistics
+    │           │
+    │           └── build_organization_stats
+    │               └── Returns final statistics dictionary
+    │
+    └── STEP 3: Create Posters (OPTIONAL, if create_posters=True)
+        └── create_posters_for_score_folders
+            │
+            └── LOOP: for each score folder
+                └── LOOP: for each poster needed (based on images_per_poster)
+                    └── create_poster_from_folder
+                        │
+                        ├── load_image_fast (for each image)
+                        │   │
+                        │   └── _load_image_cached (if cache=True)
+                        │       └── LRU cache decorator
+                        │
+                        └── annotate_image_with_index (if annotate_with_index=True)
+                            └── Adds index number overlay to image
+
+
+FUNCTION CATEGORIES
+==================
+
+🔵 UTILITY FUNCTIONS (Lowest Level - Reusable Building Blocks)
+├── normalize_score_thresholds
+├── get_image_parent_folder
+├── build_target_folder_path
+├── copy_or_move_file
+├── load_image_fast
+├── _load_image_cached
+└── validate_prediction_result
+
+🟢 PROCESSING FUNCTIONS (Mid Level - Single Item Processing)
+├── determine_score_folder
+├── save_image_by_score
+├── process_single_image_result
+└── annotate_image_with_index
+
+🟡 ORGANIZATION FUNCTIONS (Higher Level - Batch Processing)
+├── create_score_folders
+├── initialize_folder_stats
+├── update_folder_stats
+├── create_folder_metadata
+├── save_folder_metadata
+├── save_all_folder_metadata
+├── print_organization_summary
+└── build_organization_stats
+
+🟠 WORKFLOW FUNCTIONS (Highest Level - Complete Workflows)
+├── create_image_index_dataframe
+├── organize_images_by_score
+├── create_poster_from_folder
+├── create_posters_for_score_folders
+└── predict_and_organize_by_score (MAIN ENTRY POINT)
+
+
+EXECUTION SEQUENCE
+==================
+
+1. INITIALIZATION
+   predict_and_organize_by_score
+   ├── create_image_index_dataframe → Creates index mapping
+   └── predict_image_list_from_file_enhanced → Gets predictions
+
+2. ORGANIZATION (for each image)
+   organize_images_by_score
+   ├── create_score_folders → Setup folders
+   ├── initialize_folder_stats → Setup tracking
+   └── LOOP: process each image
+       ├── validate_prediction_result → Validate
+       ├── save_image_by_score → Save
+       │   ├── get_image_parent_folder → Get parent
+       │   ├── determine_score_folder → Determine folder
+       │   │   └── normalize_score_thresholds → Normalize
+       │   ├── build_target_folder_path → Build path
+       │   └── copy_or_move_file → Copy/move
+       └── update_folder_stats → Update stats
+
+3. METADATA & SUMMARY
+   organize_images_by_score
+   ├── save_all_folder_metadata → Save JSON files
+   ├── print_organization_summary → Print summary
+   └── build_organization_stats → Build final stats
+
+4. POSTER CREATION (optional)
+   create_posters_for_score_folders
+   └── LOOP: for each folder
+       └── create_poster_from_folder
+           ├── load_image_fast → Load images
+           └── annotate_image_with_index → Add index (if enabled)
+
+
+KEY INSIGHTS
+============
+
+1. Modularity: Each function has a single responsibility
+2. Composability: Higher-level functions compose lower-level ones
+3. Reusability: Utility functions can be used independently
+4. Progressive Complexity: Simple functions build up to complex workflows
+5. Optional Features: Poster creation is optional and can be disabled
+

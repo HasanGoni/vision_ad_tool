@@ -5,13 +5,20 @@
 # %% auto 0
 __all__ = ['determine_score_folder', 'create_score_folders', 'save_image_by_score', 'organize_images_by_score',
            'create_posters_for_score_folders', 'predict_and_organize_by_score', 'annotate_image_with_index',
-           'create_image_index_dataframe']
+           'create_image_index_dataframe', 'load_image_fast', '_load_image_cached', 'create_poster_from_folder',
+           'get_images_from_folder', 'calculate_grid_dimensions', 'create_poster_figure', 'set_poster_title',
+           'find_image_index_in_dataframe', 'load_and_prepare_image', 'display_image_on_axis',
+           'display_error_on_axis', 'hide_empty_grid_cells', 'save_poster_figure',
+           'get_images_from_score_folder', 'calculate_num_posters_needed', 'get_poster_image_subset',
+           'prepare_temp_folder_for_poster', 'cleanup_temp_folder', 'create_single_poster_for_folder',
+           'process_score_folder_for_posters', 'print_poster_creation_summary']
 
 # %% ../../nbs/14_inference.anomaly_score_organizer.ipynb 3
 import os
 import json
 import shutil
 from pathlib import Path
+from functools import lru_cache
 from typing import Union, List, Dict, Any, Optional, Tuple
 import numpy as np
 import pandas as pd
@@ -43,9 +50,9 @@ def determine_score_folder(
 ) -> str:  # Returns the folder name based on the score
     """
     Determine which folder an image should go to based on its anomaly score.
-    
+
     The image is placed in the folder corresponding to the smallest threshold that is >= the score.
-    
+
     Example:
         score_thresholds = [0.5, 1.0]
         - score 0.3 -> folder "0.5"
@@ -53,12 +60,12 @@ def determine_score_folder(
     """
     # Sort thresholds to ensure correct ordering
     sorted_thresholds = sorted(score_thresholds)
-    
+
     # Find the appropriate folder
     for threshold in sorted_thresholds:
         if anomaly_score <= threshold:
             return str(threshold)
-    
+
     # If score exceeds all thresholds, use the last one
     return str(sorted_thresholds[-1])
 
@@ -69,23 +76,48 @@ def create_score_folders(
 ) -> Dict[str, Path]:  # Returns dict mapping threshold strings to folder paths
     """
     Create subdirectories for each score threshold.
-    
+
     Returns a dictionary mapping threshold values to their folder paths.
     """
     output_dir = Path(output_dir)
     folder_map = {}
-    
+
     for threshold in score_thresholds:
         folder_name = str(threshold)
         folder_path = output_dir / folder_name
         folder_path.mkdir(parents=True, exist_ok=True)
         folder_map[folder_name] = folder_path
-    
+
     print(f"✅ Created {len(folder_map)} score folders in {output_dir}")
     for threshold, path in sorted(folder_map.items()):
         print(f"   📁 {threshold}: {path}")
-    
+
     return folder_map
+
+# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb 8
+def initialize_folder_stats(
+    score_thresholds: List[float]  # List of score thresholds
+) -> Dict[str, Dict[str, Any]]:  # Returns initialized stats dictionary
+    """
+    Initialize folder statistics dictionary.
+
+    Returns dict with structure: {folder_name: {'count': 0, 'images': [], 'scores': []}}
+    """
+    return {str(t): {'count': 0, 'images': [], 'scores': []} for t in score_thresholds}
+
+# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb 8
+def update_folder_stats(
+    folder_stats: Dict[str, Dict[str, Any]],  # Folder statistics dictionary
+    folder_name: str,  # Folder name
+    dest_path: str,  # Destination path
+    anomaly_score: float  # Anomaly score
+) -> None:
+    """
+    Update folder statistics with a new image result.
+    """
+    folder_stats[folder_name]['count'] += 1
+    folder_stats[folder_name]['images'].append(dest_path)
+    folder_stats[folder_name]['scores'].append(anomaly_score)
 
 # %% ../../nbs/14_inference.anomaly_score_organizer.ipynb 8
 def save_image_by_score(
@@ -97,28 +129,28 @@ def save_image_by_score(
 ) -> Path:  # Returns the destination path
     """
     Save (copy or move) an image to the appropriate score folder.
-    
+
     Returns the destination path where the image was saved.
     """
     image_path = Path(image_path)
-    
+
     if not image_path.exists():
         raise FileNotFoundError(f"Image not found: {image_path}")
-    
+
     # Determine target folder
     folder_name = determine_score_folder(anomaly_score, score_thresholds)
     target_folder = output_dir / folder_name
     target_folder.mkdir(parents=True, exist_ok=True)
-    
+
     # Create destination path
     dest_path = target_folder / image_path.name
-    
+
     # Copy or move the file
     if copy_mode:
         shutil.copy2(image_path, dest_path)
     else:
         shutil.move(str(image_path), str(dest_path))
-    
+
     return dest_path
 
 # %% ../../nbs/14_inference.anomaly_score_organizer.ipynb 9
@@ -131,47 +163,47 @@ def organize_images_by_score(
 ) -> Dict[str, Any]:  # Returns organization statistics
     """
     Organize images into folders based on their anomaly scores.
-    
+
     Args:
         prediction_results: List of prediction results, each containing 'image_path' and 'anomaly_score'
         output_dir: Base directory where score folders will be created
         score_thresholds: List of threshold values (e.g., [0.5, 1.0] for simple two-folder setup)
         copy_mode: Whether to copy (True) or move (False) images
         save_metadata: Whether to save JSON metadata for each folder
-    
+
     Returns:
         Dictionary with organization statistics
     """
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
-    
+
     print("\n🗂️  ORGANIZING IMAGES BY ANOMALY SCORE")
     print("="*70)
     print(f"📂 Output directory: {output_dir}")
     print(f"📊 Score thresholds: {score_thresholds}")
     print(f"📋 Total images: {len(prediction_results)}")
     print(f"🔄 Mode: {'COPY' if copy_mode else 'MOVE'}")
-    
+
     # Create score folders
     folder_map = create_score_folders(output_dir, score_thresholds)
-    
+
     # Track statistics
     folder_stats = {str(t): {'count': 0, 'images': [], 'scores': []} for t in score_thresholds}
     failed_count = 0
-    
+
     print("\n📦 Processing images...")
-    
+
     # Process each image
     for result in tqdm(prediction_results, desc="Organizing images"):
         try:
             image_path = result.get('image_path')
             anomaly_score = result.get('anomaly_score')
-            
+
             if image_path is None or anomaly_score is None:
                 print(f"⚠️  Skipping result with missing data: {result}")
                 failed_count += 1
                 continue
-            
+
             # Save image to appropriate folder
             dest_path = save_image_by_score(
                 image_path=image_path,
@@ -180,17 +212,17 @@ def organize_images_by_score(
                 score_thresholds=score_thresholds,
                 copy_mode=copy_mode
             )
-            
+
             # Update statistics
             folder_name = determine_score_folder(anomaly_score, score_thresholds)
             folder_stats[folder_name]['count'] += 1
             folder_stats[folder_name]['images'].append(str(dest_path))
             folder_stats[folder_name]['scores'].append(float(anomaly_score))
-            
+
         except Exception as e:
             print(f"❌ Error processing {result.get('image_path', 'unknown')}: {e}")
             failed_count += 1
-    
+
     # Save metadata for each folder if requested
     if save_metadata:
         print("\n💾 Saving metadata...")
@@ -207,7 +239,7 @@ def organize_images_by_score(
                 }
                 with open(metadata_path, 'w') as f:
                     json.dump(metadata, f, indent=2)
-    
+
     # Print summary
     print("\n📊 ORGANIZATION SUMMARY")
     print("="*70)
@@ -217,21 +249,611 @@ def organize_images_by_score(
         if count > 0:
             avg_score = np.mean(folder_stats[folder_name]['scores'])
             print(f"📁 Folder '{folder_name}': {count} images (avg score: {avg_score:.4f})")
-    
+
     if failed_count > 0:
         print(f"\n⚠️  Failed: {failed_count} images")
-    
+
     print("\n✅ Organization complete!")
-    
+
     return {
         'output_dir': str(output_dir),
         'score_thresholds': score_thresholds,
-        'folder_stats': {k: {'count': v['count'], 
+        'folder_stats': {k: {'count': v['count'],
                              'avg_score': float(np.mean(v['scores'])) if v['scores'] else 0.0}
                         for k, v in folder_stats.items()},
         'total_processed': len(prediction_results) - failed_count,
         'failed_count': failed_count
     }
+
+# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb 7
+def load_image_fast(
+    image_path: Union[str, Path],  # Path to image
+    cache: bool = True  # Whether to cache loaded images
+) -> Image.Image:  # Returns PIL Image
+    """
+    Fast image loading with optional caching.
+
+    Uses efficient PIL loading and optional LRU cache for repeated access.
+
+    Example:
+        img = load_image_fast("path/to/image.jpg", cache=True)
+    """
+    image_path = Path(image_path)
+
+    if cache:
+        return _load_image_cached(str(image_path))
+    else:
+        return Image.open(image_path).convert('RGB')
+
+# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb 7
+@lru_cache(maxsize=1000)
+def _load_image_cached(image_path_str: str) -> Image.Image:
+    """Cached image loader (internal use)."""
+    return Image.open(image_path_str).convert('RGB')
+
+# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb 9
+def get_images_from_folder(
+    folder_path: Path,  # Path to folder containing images
+    max_images: Optional[int] = None  # Maximum number of images to return (None = all images)
+) -> List[Path]:  # Returns sorted list of image paths
+    """
+    Get images from a folder, optionally limited to a maximum count.
+
+    Searches for common image extensions and returns all images (or up to max_images
+    if specified).
+
+    Example:
+        # Get all images
+        images = get_images_from_folder(Path("output/0.5"))
+        # Returns: [Path("output/0.5/img1.jpg"), ...] all images
+
+        # Get limited images
+        images = get_images_from_folder(Path("output/0.5"), max_images=20)
+        # Returns: [Path("output/0.5/img1.jpg"), ...] up to 20 images
+    """
+    image_extensions = ['.jpg', '.jpeg', '.png', '.bmp', '.tiff', '.tif']
+    images = []
+
+    for ext in image_extensions:
+        images.extend(folder_path.glob(f"*{ext}"))
+        images.extend(folder_path.glob(f"*{ext.upper()}"))
+
+    images = sorted(set(images))
+
+    if max_images is not None:
+        return images[:max_images]
+    return images
+
+# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb 9
+def calculate_grid_dimensions(
+    num_images: int,  # Number of images to display
+    grid_cols: int  # Number of columns in the grid
+) -> Tuple[int, int]:  # Returns (grid_rows, grid_cols)
+    """
+    Calculate grid dimensions for a given number of images.
+
+    Example:
+        rows, cols = calculate_grid_dimensions(23, 5)
+        # Returns: (5, 5) - 5 rows needed for 23 images with 5 columns
+    """
+    grid_rows = int(np.ceil(num_images / grid_cols))
+    return grid_rows, grid_cols
+
+# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb 9
+def create_poster_figure(
+    grid_rows: int,  # Number of rows in the grid
+    grid_cols: int,  # Number of columns in the grid
+    image_size: Tuple[int, int]  # Size of each image (width, height)
+) -> Tuple[plt.Figure, List[List[plt.Axes]]]:  # Returns (figure, axes array)
+    """
+    Create a matplotlib figure with subplots arranged in a grid.
+
+    Handles edge cases for single row/column grids and returns
+    axes in a consistent 2D array format.
+
+    Example:
+        fig, axes = create_poster_figure(4, 5, (224, 224))
+        # Creates a 4x5 grid figure
+    """
+    # Calculate figure size
+    fig_width = grid_cols * (image_size[0] / 100)
+    fig_height = grid_rows * (image_size[1] / 100) + 1  # Extra space for title
+
+    fig, axes = plt.subplots(grid_rows, grid_cols, figsize=(fig_width, fig_height))
+
+    # Normalize axes to always be a 2D array
+    if grid_rows == 1 and grid_cols == 1:
+        axes = [[axes]]
+    elif grid_rows == 1:
+        axes = [axes]
+    elif grid_cols == 1:
+        axes = [[ax] for ax in axes]
+
+    return fig, axes
+
+# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb 9
+def set_poster_title(
+    fig: plt.Figure,  # Matplotlib figure
+    title: Optional[str],  # Title text (optional)
+    poster_index: int  # Index of the poster (0-based)
+) -> None:
+    """
+    Set the title for a poster figure.
+
+    Example:
+        set_poster_title(fig, "Score Folder 0.5", poster_index=0)
+        # Sets title to "Score Folder 0.5 - Poster 1"
+    """
+    if title:
+        fig.suptitle(f"{title} - Poster {poster_index + 1}", fontsize=14, weight='bold')
+
+# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb 9
+def find_image_index_in_dataframe(
+    image_name: str,  # Name of the image file
+    image_index_df: pd.DataFrame  # DataFrame with image indices
+) -> Optional[int]:  # Returns index number or None if not found
+    """
+    Find the index number for an image in the index dataframe.
+
+    Example:
+        idx = find_image_index_in_dataframe("img1.jpg", df)
+        # Returns: 0 (or None if not found)
+    """
+    df_match = image_index_df[image_index_df['image_name'] == image_name]
+    if not df_match.empty:
+        return df_match.iloc[0]['index']
+    return None
+
+# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb 9
+def load_and_prepare_image(
+    img_path: Path,  # Path to the image file
+    image_size: Tuple[int, int],  # Target size for the image
+    image_index_df: pd.DataFrame,  # DataFrame with image indices
+    annotate_with_index: bool,  # Whether to annotate with index
+    font_size: int  # Font size for annotations
+) -> Image.Image:  # Returns processed PIL Image
+    """
+    Load an image, resize it, and optionally annotate with index.
+
+    Example:
+        img = load_and_prepare_image(
+            Path("img1.jpg"), (224, 224), df,
+            annotate_with_index=True, font_size=30
+        )
+    """
+    # Load and resize image
+    img = load_image_fast(img_path, cache=False)
+    img = img.resize(image_size, Image.Resampling.LANCZOS)
+
+    # Annotate with index if requested
+    if annotate_with_index:
+        img_index = find_image_index_in_dataframe(img_path.name, image_index_df)
+        if img_index is not None:
+            img = annotate_image_with_index(img, img_index, font_size=font_size)
+
+    return img
+
+# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb 9
+def display_image_on_axis(
+    ax: plt.Axes,  # Matplotlib axis
+    img: Image.Image,  # PIL Image to display
+    img_path: Path  # Path to the image (for title)
+) -> None:
+    """
+    Display an image on a matplotlib axis.
+
+    Example:
+        display_image_on_axis(ax, img, Path("img1.jpg"))
+    """
+    ax.imshow(np.array(img))
+    ax.set_title(img_path.stem[:20], fontsize=8)  # Truncate long names
+    ax.axis('off')
+
+# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb 9
+def display_error_on_axis(
+    ax: plt.Axes,  # Matplotlib axis
+    img_path: Path  # Path to the image that failed
+) -> None:
+    """
+    Display an error message on an axis when image loading fails.
+
+    Example:
+        display_error_on_axis(ax, Path("broken.jpg"))
+    """
+    ax.text(0.5, 0.5, f"Error\n{img_path.name}",
+           ha='center', va='center', transform=ax.transAxes,
+           fontsize=8, color='red')
+    ax.axis('off')
+
+# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb 9
+def hide_empty_grid_cells(
+    axes: List[List[plt.Axes]],  # 2D array of axes
+    num_images: int,  # Number of images actually displayed
+    grid_cols: int  # Number of columns in the grid
+) -> None:
+    """
+    Hide (turn off) empty grid cells that don't contain images.
+
+    Example:
+        hide_empty_grid_cells(axes, 23, 5)
+        # Hides cells 24-25 in a 5x5 grid
+    """
+    total_cells = len(axes) * grid_cols
+    for idx in range(num_images, total_cells):
+        row = idx // grid_cols
+        col = idx % grid_cols
+        axes[row][col].axis('off')
+
+# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb 9
+def save_poster_figure(
+    fig: plt.Figure,  # Matplotlib figure
+    output_path: Path  # Path to save the poster
+) -> Path:  # Returns the saved path
+    """
+    Save a poster figure to disk.
+
+    Example:
+        save_poster_figure(fig, Path("output/poster.png"))
+    """
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    plt.tight_layout()
+    plt.savefig(output_path, dpi=150, bbox_inches='tight', facecolor='white')
+    plt.close()
+    return output_path
+
+# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb 9
+def create_poster_from_folder(
+    folder_path: Union[str, Path],  # Folder containing images
+    image_index_df: pd.DataFrame,  # DataFrame with image indices
+    output_path: Union[str, Path],  # Path to save poster
+    images_per_poster: int = 20,  # Number of images per poster
+    poster_index: int = 0,  # Index of this poster
+    image_size: Tuple[int, int] = (224, 224),  # Size of each image
+    grid_cols: int = 5,  # Number of columns
+    annotate_with_index: bool = True,  # Whether to annotate with index
+    font_size: int = 30,  # Font size for annotations
+    title: Optional[str] = None  # Poster title
+) -> Optional[Path]:  # Returns path to saved poster or None
+    """
+    Create a poster from images in a folder with optional index annotations.
+
+    This function gets ALL images from the folder (no limit). The folder should
+    already contain the subset of images for this specific poster (typically
+    prepared by get_poster_image_subset at a higher level).
+
+    This is the main orchestrator function that combines all modular functions:
+    - get_images_from_folder: Gets ALL images from folder (no limit)
+    - calculate_grid_dimensions: Calculates grid size
+    - create_poster_figure: Creates matplotlib figure
+    - set_poster_title: Sets figure title
+    - load_and_prepare_image: Loads and processes each image
+    - display_image_on_axis: Displays images on axes
+    - hide_empty_grid_cells: Hides unused cells
+    - save_poster_figure: Saves the final poster
+
+    Example:
+        poster_path = create_poster_from_folder(
+            folder_path="output/0.5/_temp_poster_0",  # Temp folder with subset
+            image_index_df=df,
+            output_path="poster.png",
+            images_per_poster=20,  # Used for grid calculation, not limiting
+            grid_cols=5
+        )
+    """
+    folder_path = Path(folder_path)
+    output_path = Path(output_path)
+
+    if not folder_path.exists():
+        print(f"⚠️  Folder not found: {folder_path}")
+        return None
+
+    # Get all images from folder (no limit - folder should already contain the subset)
+    images = get_images_from_folder(folder_path)
+
+    if not images:
+        print(f"⚠️  No images found in {folder_path}")
+        return None
+
+    # Calculate grid dimensions
+    grid_rows, grid_cols = calculate_grid_dimensions(len(images), grid_cols)
+
+    # Create figure
+    fig, axes = create_poster_figure(grid_rows, grid_cols, image_size)
+
+    # Set title
+    set_poster_title(fig, title, poster_index)
+
+    # Load and display images
+    for idx, img_path in enumerate(images):
+        row = idx // grid_cols
+        col = idx % grid_cols
+        ax = axes[row][col]
+
+        try:
+            # Load and prepare image
+            img = load_and_prepare_image(
+                img_path=img_path,
+                image_size=image_size,
+                image_index_df=image_index_df,
+                annotate_with_index=annotate_with_index,
+                font_size=font_size
+            )
+
+            # Display image
+            display_image_on_axis(ax, img, img_path)
+
+        except Exception:
+            display_error_on_axis(ax, img_path)
+
+    # Hide empty cells
+    hide_empty_grid_cells(axes, len(images), grid_cols)
+
+    # Save poster
+    return save_poster_figure(fig, output_path)
+
+# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb 10
+def get_images_from_score_folder(
+    folder_path: Path  # Path to the score folder
+) -> List[Path]:  # Returns sorted list of image paths
+    """
+    Get all images from a score folder.
+
+    Searches for common image extensions (case-insensitive) and returns
+    a sorted list of image paths.
+
+    Example:
+        images = get_images_from_score_folder(Path("output/0.5"))
+        # Returns: [Path("output/0.5/img1.jpg"), Path("output/0.5/img2.png"), ...]
+    """
+    image_extensions = ['.jpg', '.jpeg', '.png', '.bmp', '.tiff', '.tif']
+    images_in_folder = []
+
+    for ext in image_extensions:
+        images_in_folder.extend(folder_path.glob(f"*{ext}"))
+        images_in_folder.extend(folder_path.glob(f"*{ext.upper()}"))
+
+    return sorted(set(images_in_folder))
+
+# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb 10
+def calculate_num_posters_needed(
+    num_images: int,  # Total number of images
+    images_per_poster: int  # Number of images per poster
+) -> int:  # Returns number of posters needed
+    """
+    Calculate how many posters are needed for a given number of images.
+
+    Uses ceiling division to ensure all images are included, even if the
+    last poster has fewer images than images_per_poster.
+
+    Example:
+        num_posters = calculate_num_posters_needed(45, 20)
+        # Returns: 3 (for 45 images: 20 + 20 + 5)
+
+        num_posters = calculate_num_posters_needed(40, 20)
+        # Returns: 2 (for 40 images: 20 + 20)
+    """
+    return int(np.ceil(num_images / images_per_poster))
+
+# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb 10
+def get_poster_image_subset(
+    images: List[Path],  # List of all images
+    poster_idx: int,  # Index of the poster (0-based)
+    images_per_poster: int  # Number of images per poster
+) -> List[Path]:  # Returns subset of images for this poster
+    """
+    Get the subset of images for a specific poster.
+
+    Handles the last poster correctly - if there are fewer images remaining
+    than images_per_poster, it returns all remaining images.
+
+    Example:
+        all_images = [img1, img2, ..., img45]  # 45 images total
+        poster_0_images = get_poster_image_subset(all_images, 0, 20)
+        # Returns: [img1, img2, ..., img20]  # 20 images
+
+        poster_1_images = get_poster_image_subset(all_images, 1, 20)
+        # Returns: [img21, img22, ..., img40]  # 20 images
+
+        poster_2_images = get_poster_image_subset(all_images, 2, 20)
+        # Returns: [img41, img42, ..., img45]  # 5 images (remaining)
+    """
+    start_idx = poster_idx * images_per_poster
+    end_idx = min((poster_idx + 1) * images_per_poster, len(images))
+    return images[start_idx:end_idx]
+
+# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb 10
+def prepare_temp_folder_for_poster(
+    folder_path: Path,  # Base folder path
+    poster_idx: int,  # Index of the poster
+    poster_images: List[Path]  # Images to copy to temp folder
+) -> Path:  # Returns path to temporary folder
+    """
+    Create a temporary folder and copy images into it.
+
+    Example:
+        temp_folder = prepare_temp_folder_for_poster(
+            Path("output/0.5"), 0, [img1, img2, ...]
+        )
+        # Creates: output/0.5/_temp_poster_0/ with copied images
+    """
+    temp_folder = folder_path / f"_temp_poster_{poster_idx}"
+    temp_folder.mkdir(exist_ok=True)
+
+    for img in poster_images:
+        shutil.copy2(img, temp_folder / img.name)
+
+    return temp_folder
+
+# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb 10
+def cleanup_temp_folder(
+    temp_folder: Path  # Path to temporary folder
+) -> None:
+    """
+    Clean up a temporary folder.
+
+    Example:
+        cleanup_temp_folder(Path("output/0.5/_temp_poster_0"))
+        # Removes the folder and all its contents
+    """
+    shutil.rmtree(temp_folder, ignore_errors=True)
+
+# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb 10
+def create_single_poster_for_folder(
+    folder_path: Path,  # Base folder path
+    poster_idx: int,  # Index of the poster (0-based)
+    poster_images: List[Path],  # Images for this poster
+    image_index_df: pd.DataFrame,  # DataFrame with image indices
+    images_per_poster: int,  # Number of images per poster
+    image_size: Tuple[int, int],  # Size of each image
+    grid_cols: int,  # Number of columns in grid
+    annotate_with_index: bool,  # Whether to annotate with index
+    font_size: int,  # Font size for annotations
+    folder_name: str  # Name of the score folder
+) -> Optional[Path]:  # Returns path to created poster or None
+    """
+    Create a single poster from a subset of images.
+
+    This function handles temporary folder creation, poster generation,
+    and cleanup.
+
+    Example:
+        poster_path = create_single_poster_for_folder(
+            folder_path=Path("output/0.5"),
+            poster_idx=0,
+            poster_images=[img1, img2, ..., img20],
+            image_index_df=df,
+            images_per_poster=20,
+            image_size=(224, 224),
+            grid_cols=5,
+            annotate_with_index=True,
+            font_size=30,
+            folder_name="0.5"
+        )
+    """
+    poster_output_path = folder_path / f"poster_{poster_idx + 1:03d}.png"
+    temp_folder = None
+
+    try:
+        # Prepare temporary folder with images
+        temp_folder = prepare_temp_folder_for_poster(
+            folder_path=folder_path,
+            poster_idx=poster_idx,
+            poster_images=poster_images
+        )
+
+        # Create poster
+        poster_path = create_poster_from_folder(
+            folder_path=temp_folder,
+            image_index_df=image_index_df,
+            output_path=poster_output_path,
+            images_per_poster=images_per_poster,
+            poster_index=poster_idx,
+            image_size=image_size,
+            grid_cols=grid_cols,
+            annotate_with_index=annotate_with_index,
+            font_size=font_size,
+            title=f"Score Folder {folder_name}"
+        )
+
+        return poster_path
+
+    finally:
+        # Always clean up temp folder
+        if temp_folder is not None:
+            cleanup_temp_folder(temp_folder)
+
+# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb 10
+def process_score_folder_for_posters(
+    folder_path: Path,  # Path to the score folder
+    folder_name: str,  # Name of the folder (threshold value as string)
+    image_index_df: pd.DataFrame,  # DataFrame with image indices
+    images_per_poster: int,  # Number of images per poster
+    image_size: Tuple[int, int],  # Size of each image
+    grid_cols: int,  # Number of columns in grid
+    annotate_with_index: bool,  # Whether to annotate with index
+    font_size: int  # Font size for annotations
+) -> List[Path]:  # Returns list of created poster paths
+    """
+    Process a single score folder and create all necessary posters.
+
+    This function processes ALL images in the folder. If there are more images
+    than images_per_poster, it creates multiple posters. The last poster will
+    contain the remaining images (even if fewer than images_per_poster).
+
+    Example:
+        # Folder has 45 images, images_per_poster=20
+        poster_paths = process_score_folder_for_posters(
+            folder_path=Path("output/0.5"),
+            folder_name="0.5",
+            image_index_df=df,
+            images_per_poster=20,
+            image_size=(224, 224),
+            grid_cols=5,
+            annotate_with_index=True,
+            font_size=30
+        )
+        # Returns: [poster_001.png (20 images), poster_002.png (20 images),
+        #           poster_003.png (5 images - remaining)]
+    """
+    # Get all images in folder
+    images_in_folder = get_images_from_score_folder(folder_path)
+
+    if not images_in_folder:
+        print(f"📁 Folder '{folder_name}': No images found")
+        return []
+
+    print(f"\n📁 Processing folder '{folder_name}': {len(images_in_folder)} images")
+
+    # Calculate number of posters needed
+    num_posters = calculate_num_posters_needed(
+        num_images=len(images_in_folder),
+        images_per_poster=images_per_poster
+    )
+
+    folder_poster_paths = []
+
+    # Create each poster
+    for poster_idx in range(num_posters):
+        # Get subset of images for this poster
+        poster_images = get_poster_image_subset(
+            images=images_in_folder,
+            poster_idx=poster_idx,
+            images_per_poster=images_per_poster
+        )
+
+        # Create poster
+        poster_path = create_single_poster_for_folder(
+            folder_path=folder_path,
+            poster_idx=poster_idx,
+            poster_images=poster_images,
+            image_index_df=image_index_df,
+            images_per_poster=images_per_poster,
+            image_size=image_size,
+            grid_cols=grid_cols,
+            annotate_with_index=annotate_with_index,
+            font_size=font_size,
+            folder_name=folder_name
+        )
+
+        if poster_path:
+            folder_poster_paths.append(poster_path)
+            print(f"  ✅ Created poster {poster_idx + 1}/{num_posters}: {len(poster_images)} images")
+
+    return folder_poster_paths
+
+# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb 10
+def print_poster_creation_summary(
+    poster_paths: Dict[str, List[Path]]  # Dictionary mapping folder names to poster paths
+) -> None:
+    """
+    Print a summary of poster creation results.
+
+    Example:
+        print_poster_creation_summary({"0.5": [poster1, poster2], "1.0": [poster3]})
+    """
+    print("\n✅ Poster creation complete!")
+    print(f"   Total folders processed: {len(poster_paths)}")
+    print(f"   Total posters created: {sum(len(p) for p in poster_paths.values())}")
 
 # %% ../../nbs/14_inference.anomaly_score_organizer.ipynb 10
 def create_posters_for_score_folders(
@@ -246,106 +868,79 @@ def create_posters_for_score_folders(
 ) -> Dict[str, List[Path]]:  # Returns dict mapping folder names to poster paths
     """
     Create posters for all score folders.
-    
+
     This function processes each score folder and creates one or more posters
-    depending on the number of images in each folder.
-    
+    depending on the number of images in each folder. It processes ALL images
+    in each folder - if there are more images than images_per_poster, it creates
+    multiple posters. The last poster will contain the remaining images (even
+    if fewer than images_per_poster).
+
+    This is the main orchestrator function that combines all modular functions:
+    - get_images_from_score_folder: Gets ALL images from each folder (no limit)
+    - calculate_num_posters_needed: Calculates how many posters are needed
+    - get_poster_image_subset: Gets subset of images for each poster (handles last poster correctly)
+    - create_single_poster_for_folder: Creates individual posters
+    - process_score_folder_for_posters: Processes entire folders
+    - print_poster_creation_summary: Prints final summary
+
     Args:
         output_dir: Base directory containing score folders
         image_index_df: DataFrame with image indices
         score_thresholds: List of threshold values
-        images_per_poster: How many images per poster
+        images_per_poster: How many images per poster (last poster may have fewer)
         image_size: Size of each image in the poster
         grid_cols: Number of columns in the grid
         annotate_with_index: Whether to annotate images with indices
         font_size: Font size for annotations
-    
+
     Returns:
         Dictionary mapping folder names to list of poster paths
+
+    Example:
+        # Folder "0.5" has 45 images, images_per_poster=20
+        poster_paths = create_posters_for_score_folders(
+            output_dir="output",
+            image_index_df=df,
+            score_thresholds=[0.5, 1.0],
+            images_per_poster=20
+        )
+        # Creates 3 posters for "0.5": poster_001.png (20 images),
+        #                              poster_002.png (20 images),
+        #                              poster_003.png (5 images - remaining)
     """
     output_dir = Path(output_dir)
     poster_paths = {}
-    
+
     print("\n🖼️  CREATING POSTERS FOR SCORE FOLDERS")
     print("="*70)
-    
+
     for threshold in score_thresholds:
         folder_name = str(threshold)
         folder_path = output_dir / folder_name
-        
+
         if not folder_path.exists():
             print(f"⚠️  Folder {folder_name} does not exist, skipping...")
             continue
-        
-        # Get all images in folder (excluding metadata.json)
-        image_extensions = ['.jpg', '.jpeg', '.png', '.bmp', '.tiff', '.tif']
-        images_in_folder = []
-        for ext in image_extensions:
-            images_in_folder.extend(folder_path.glob(f"*{ext}"))
-            images_in_folder.extend(folder_path.glob(f"*{ext.upper()}"))
-        
-        images_in_folder = sorted(set(images_in_folder))
-        
-        if not images_in_folder:
-            print(f"📁 Folder '{folder_name}': No images found")
-            continue
-        
-        print(f"\n📁 Processing folder '{folder_name}': {len(images_in_folder)} images")
-        
-        # Calculate number of posters needed
-        num_posters = int(np.ceil(len(images_in_folder) / images_per_poster))
-        folder_poster_paths = []
-        
-        # Create posters
-        for poster_idx in range(num_posters):
-            start_idx = poster_idx * images_per_poster
-            end_idx = min((poster_idx + 1) * images_per_poster, len(images_in_folder))
-            
-            # Create a temporary folder for this subset
-            poster_output_path = folder_path / f"poster_{poster_idx + 1:03d}.png"
-            
-            # Get subset of images for this poster
-            poster_images = images_in_folder[start_idx:end_idx]
-            
-            # Create temporary folder with subset
-            temp_folder = folder_path / f"_temp_poster_{poster_idx}"
-            temp_folder.mkdir(exist_ok=True)
-            
-            # Copy images to temp folder
-            for img in poster_images:
-                shutil.copy2(img, temp_folder / img.name)
-            
-            # Create poster
-            try:
-                poster_path = create_poster_from_folder(
-                    folder_path=temp_folder,
-                    image_index_df=image_index_df,
-                    output_path=poster_output_path,
-                    images_per_poster=images_per_poster,
-                    poster_index=poster_idx,
-                    image_size=image_size,
-                    grid_cols=grid_cols,
-                    annotate_with_index=annotate_with_index,
-                    font_size=font_size,
-                    title=f"Score Folder {folder_name}"
-                )
-                
-                if poster_path:
-                    folder_poster_paths.append(poster_path)
-                    print(f"  ✅ Created poster {poster_idx + 1}/{num_posters}: {len(poster_images)} images")
-            
-            finally:
-                # Clean up temp folder
-                shutil.rmtree(temp_folder, ignore_errors=True)
-        
+
+        # Process folder and create all posters
+        folder_poster_paths = process_score_folder_for_posters(
+            folder_path=folder_path,
+            folder_name=folder_name,
+            image_index_df=image_index_df,
+            images_per_poster=images_per_poster,
+            image_size=image_size,
+            grid_cols=grid_cols,
+            annotate_with_index=annotate_with_index,
+            font_size=font_size
+        )
+
         if folder_poster_paths:
             poster_paths[folder_name] = folder_poster_paths
             print(f"📊 Folder '{folder_name}': Created {len(folder_poster_paths)} poster(s)")
-    
-    print("\n✅ Poster creation complete!")
-    print(f"   Total folders processed: {len(poster_paths)}")
-    print(f"   Total posters created: {sum(len(p) for p in poster_paths.values())}")
-    
+
+    # Print summary
+    print_poster_creation_summary(poster_paths)
+
     return poster_paths
 
 # %% ../../nbs/14_inference.anomaly_score_organizer.ipynb 11
@@ -368,14 +963,14 @@ def predict_and_organize_by_score(
 ) -> Dict[str, Any]:  # Returns combined prediction and organization results
     """
     Complete workflow: Predict anomaly scores, organize images, and create indexed posters.
-    
+
     This is the main function that combines:
     1. Image index dataframe creation
     2. Smart batch creation
     3. Prediction using predict_image_list_from_file_enhanced
     4. Image organization based on anomaly scores
     5. Poster creation with index annotations (optional)
-    
+
     Args:
         model_path: Path to the trained anomaly detection model
         image_list_file: Text file containing paths to images (one per line)
@@ -395,7 +990,7 @@ def predict_and_organize_by_score(
         font_size: Font size for index annotations
         device: Device to use for inference
         **kwargs: Additional arguments (save_heatmap, heatmap_style, etc.)
-    
+
     Returns:
         Dictionary containing:
         - image_index_df: DataFrame with image indices
@@ -405,18 +1000,18 @@ def predict_and_organize_by_score(
     """
     print("\n🚀 PREDICT AND ORGANIZE BY ANOMALY SCORE WITH INDEXED POSTERS")
     print("="*70)
-    
+
     # Step 0: Create image index dataframe
     print("\n📊 Step 0: Creating image index dataframe...")
     image_index_df = create_image_index_dataframe(image_list_file)
-    
+
     # Save the dataframe
     output_dir_path = Path(output_dir)
     output_dir_path.mkdir(parents=True, exist_ok=True)
     df_path = output_dir_path / "image_index.csv"
     image_index_df.to_csv(df_path, index=False)
     print(f"💾 Saved image index dataframe to {df_path}")
-    
+
     # Step 1: Run predictions
     print("\n📊 Step 1: Running predictions...")
     prediction_output = predict_image_list_from_file_enhanced(
@@ -428,10 +1023,10 @@ def predict_and_organize_by_score(
         save_results=True,
         **kwargs
     )
-    
+
     # Extract results
     prediction_results = prediction_output.get('results', [])
-    
+
     if not prediction_results:
         print("⚠️  No prediction results to organize!")
         return {
@@ -440,9 +1035,9 @@ def predict_and_organize_by_score(
             'organization_stats': None,
             'poster_paths': None
         }
-    
+
     print(f"✅ Predictions complete: {len(prediction_results)} images processed")
-    
+
     # Step 2: Organize images by score
     print("\n📁 Step 2: Organizing images by score...")
     organization_stats = organize_images_by_score(
@@ -452,7 +1047,7 @@ def predict_and_organize_by_score(
         copy_mode=copy_mode,
         save_metadata=save_metadata
     )
-    
+
     # Step 3: Create posters (optional)
     poster_paths = None
     if create_posters:
@@ -467,7 +1062,7 @@ def predict_and_organize_by_score(
             annotate_with_index=annotate_with_index,
             font_size=font_size
         )
-    
+
     print("\n🎉 WORKFLOW COMPLETE!")
     print("="*70)
     print(f"📊 Image index dataframe: {df_path}")
@@ -475,7 +1070,7 @@ def predict_and_organize_by_score(
     if poster_paths:
         total_posters = sum(len(p) for p in poster_paths.values())
         print(f"🖼️  Created {total_posters} poster(s)")
-    
+
     return {
         'image_index_df': image_index_df,
         'image_index_df_path': str(df_path),
@@ -495,7 +1090,7 @@ def annotate_image_with_index(
 ) -> Image.Image:  # Returns annotated PIL Image
     """
     Add an index number to an image.
-    
+
     Args:
         image: Input image (PIL Image or numpy array)
         index: Index number to display
@@ -503,46 +1098,75 @@ def annotate_image_with_index(
         position: Where to place the index number
         text_color: RGB tuple for text color
         bg_color: RGBA tuple for background color (includes alpha for transparency)
-    
+
     Returns:
         PIL Image with index number annotated
     """
     # Convert to PIL Image if numpy array
     if isinstance(image, np.ndarray):
         image = Image.fromarray(image)
-    
+
     # Make a copy to avoid modifying original
     img_copy = image.copy().convert("RGBA")
-    
+
     # Create a transparent overlay
     overlay = Image.new('RGBA', img_copy.size, (255, 255, 255, 0))
     draw = ImageDraw.Draw(overlay)
-    
-    # Try to use a nice font, fall back to default if not available
-    try:
-        font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", font_size)
-    except:
+
+    # Try multiple font paths (cross-platform) before falling back to default
+    font_paths = [
+        # Linux common paths
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+        "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
+        "/usr/share/fonts/TTF/DejaVuSans-Bold.ttf",
+        # macOS common paths
+        "/System/Library/Fonts/Helvetica.ttc",
+        "/Library/Fonts/Arial Bold.ttf",
+        # Windows common paths (if running on Windows)
+        "C:/Windows/Fonts/arialbd.ttf",
+        "C:/Windows/Fonts/calibrib.ttf",
+    ]
+
+    font = None
+    use_default_font = False
+
+    # Try to load a font with the specified size
+    for font_path in font_paths:
         try:
-            font = ImageFont.truetype("/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf", font_size)
-        except:
-            font = ImageFont.load_default()
-    
+            font = ImageFont.truetype(font_path, font_size)
+            break
+        except (OSError, IOError):
+            continue
+
+    # If no font found, use default (will need to scale)
+    if font is None:
+        font = ImageFont.load_default()
+        use_default_font = True
+
     # Prepare text
     text = f"#{index}"
-    
+
     # Get text bounding box
     bbox = draw.textbbox((0, 0), text, font=font)
     text_width = bbox[2] - bbox[0]
     text_height = bbox[3] - bbox[1]
-    
+
+    # If using default font, scale dimensions to match font_size
+    if use_default_font:
+        # Default font is typically ~10-11px, scale to desired size
+        default_font_size = 11  # Approximate default font size
+        scale_factor = font_size / default_font_size
+        text_width = int(text_width * scale_factor)
+        text_height = int(text_height * scale_factor)
+
     # Add padding
     padding = 10
     box_width = text_width + 2 * padding
     box_height = text_height + 2 * padding
-    
+
     # Calculate position
     img_width, img_height = img_copy.size
-    
+
     if position == "top_left":
         x, y = padding, padding
     elif position == "top_right":
@@ -553,24 +1177,49 @@ def annotate_image_with_index(
         x, y = img_width - box_width - padding, img_height - box_height - padding
     else:
         x, y = padding, padding  # default to top_left
-    
+
     # Draw semi-transparent background rectangle
     draw.rectangle(
         [x, y, x + box_width, y + box_height],
         fill=bg_color
     )
-    
-    # Draw text
-    draw.text(
-        (x + padding, y + padding),
-        text,
-        font=font,
-        fill=text_color
-    )
-    
+
+    # Draw text (with scaling if using default font)
+    if use_default_font:
+        # Scale text by drawing on larger canvas and scaling down
+        scale_factor = font_size / 11  # Approximate default size
+        temp_canvas_size = (int(box_width * scale_factor), int(box_height * scale_factor))
+        temp_canvas = Image.new('RGBA', temp_canvas_size, (255, 255, 255, 0))
+        temp_draw = ImageDraw.Draw(temp_canvas)
+
+        # Draw text at scaled size
+        temp_draw.text(
+            (int(padding * scale_factor), int(padding * scale_factor)),
+            text,
+            font=font,
+            fill=text_color
+        )
+
+        # Scale down to original size
+        scaled_overlay = temp_canvas.resize(
+            (box_width, box_height),
+            Image.Resampling.LANCZOS
+        )
+
+        # Paste scaled text onto overlay
+        overlay.paste(scaled_overlay, (x, y), scaled_overlay)
+    else:
+        # Normal drawing with sized font
+        draw.text(
+            (x + padding, y + padding),
+            text,
+            font=font,
+            fill=text_color
+        )
+
     # Composite the overlay onto the image
     result = Image.alpha_composite(img_copy, overlay)
-    
+
     # Convert back to RGB
     return result.convert("RGB")
 
@@ -580,13 +1229,13 @@ def create_image_index_dataframe(
 ) -> pd.DataFrame:  # Returns dataframe with index and image paths
     """
     Create a dataframe with index numbers for all images.
-    
+
     This dataframe is used to track and reference images by index number
     when creating posters.
-    
+
     Args:
         image_list: Either a list of image paths or a path to text file containing image paths
-    
+
     Returns:
         DataFrame with columns: ['index', 'image_path', 'image_name']
     """
@@ -605,16 +1254,16 @@ def create_image_index_dataframe(
             raise FileNotFoundError(f"Image list file not found: {image_list}")
     else:
         images = [str(img) for img in image_list]
-    
+
     # Create dataframe
     df = pd.DataFrame({
         'index': range(len(images)),
         'image_path': images,
         'image_name': [Path(img).name for img in images]
     })
-    
+
     print(f"📊 Created image index dataframe with {len(df)} images")
-    
+
     return df
 
 # %% ../../nbs/14_inference.anomaly_score_organizer.ipynb 16
@@ -631,12 +1280,12 @@ def predict_and_organize_by_score(
 ) -> Dict[str, Any]:  # Returns combined prediction and organization results
     """
     Complete workflow: Predict anomaly scores and organize images into score-based folders.
-    
+
     This is the main function that combines:
     1. Smart batch creation
     2. Prediction using predict_image_list_from_file_enhanced
     3. Image organization based on anomaly scores
-    
+
     Args:
         model_path: Path to the trained anomaly detection model
         image_list_file: Text file containing paths to images (one per line)
@@ -650,7 +1299,7 @@ def predict_and_organize_by_score(
         save_metadata: Whether to save JSON metadata for each folder
         device: Device to use for inference
         **kwargs: Additional arguments (save_heatmap, heatmap_style, etc.)
-    
+
     Returns:
         Dictionary containing:
         - prediction_results: Full prediction results
@@ -658,7 +1307,7 @@ def predict_and_organize_by_score(
     """
     print("\n🚀 PREDICT AND ORGANIZE BY ANOMALY SCORE")
     print("="*70)
-    
+
     # Step 1: Run predictions
     print("\n📊 Step 1: Running predictions...")
     prediction_output = predict_image_list_from_file_enhanced(
@@ -670,19 +1319,19 @@ def predict_and_organize_by_score(
         save_results=True,
         **kwargs
     )
-    
+
     # Extract results
     prediction_results = prediction_output.get('results', [])
-    
+
     if not prediction_results:
         print("⚠️  No prediction results to organize!")
         return {
             'prediction_results': prediction_output,
             'organization_stats': None
         }
-    
+
     print(f"✅ Predictions complete: {len(prediction_results)} images processed")
-    
+
     # Step 2: Organize images by score
     print("\n📁 Step 2: Organizing images by score...")
     organization_stats = organize_images_by_score(
@@ -692,10 +1341,10 @@ def predict_and_organize_by_score(
         copy_mode=copy_mode,
         save_metadata=save_metadata
     )
-    
+
     print("\n🎉 WORKFLOW COMPLETE!")
     print("="*70)
-    
+
     return {
         'prediction_results': prediction_output,
         'organization_stats': organization_stats
