@@ -13,7 +13,7 @@ __all__ = ['test_multinode_imports', 'get_image_extensions', 'is_image_file', 'g
 # %% ../../nbs/12_inference.multinode_inference.ipynb 3
 from pathlib import Path
 from typing import (
-    Union, List, Dict, Any, 
+    Union, List, Dict, Any,
     Tuple, Optional,Set,
     Callable,Tuple
 )
@@ -29,7 +29,7 @@ from .multinode_from_aiop_tool import *
 
 # %% ../../nbs/12_inference.multinode_inference.ipynb 9
 from be_vision_ad_tools.inference.multinode_from_aiop_tool import (
-    HPC_Job, 
+    HPC_Job,
     DistributeHPC,
     print_status)
 from be_vision_ad_tools.inference.prediction_system import (
@@ -41,7 +41,7 @@ from be_vision_ad_tools.inference.prediction_system import (
 def test_multinode_imports() -> Dict[str, bool]:
     """Test that all required imports from notebooks 10 and 11 work correctly."""
     results = {}
-    
+
     # Test imports from notebook 11 (multinode infrastructure)
     try:
         from be_vision_ad_tools.inference.multinode_from_aiop_tool import (
@@ -58,7 +58,7 @@ def test_multinode_imports() -> Dict[str, bool]:
         results['multinode_imports'] = False
         print(f"❌ Failed to import from multinode_from_aiop_tool: {e}")
         return results
-    
+
     # Test imports from notebook 10 (prediction system)
     try:
         from be_vision_ad_tools.inference.multinode_infer import (
@@ -73,7 +73,7 @@ def test_multinode_imports() -> Dict[str, bool]:
         results['prediction_imports'] = False
         print(f"❌ Failed to import from multinode_infer: {e}")
         return results
-    
+
     # Test predict_image_list_from_file
     try:
         from be_vision_ad_tools.inference.prediction_system import (
@@ -86,7 +86,7 @@ def test_multinode_imports() -> Dict[str, bool]:
         results['predict_func'] = False
         print(f"❌ Failed to import predict_image_list_from_file: {e}")
         return results
-    
+
     print("\n🎉 All imports successful!")
     return results
 
@@ -119,23 +119,23 @@ def scan_nested_structure(
         "folders": {},
         "all_image_paths": []
     }
-    
+
     print(f"📁 Detected NESTED structure in: {root}")
-    
+
     for subdir in get_subdirectories(root):
         lot_name = subdir.name
         lot_images = []
-        
+
         for img_path in subdir.iterdir():
             if is_image_file(img_path):
-                lot_images.append(img_path)
+                lot_images.append(Path(img_path).as_posix())
                 structure["all_image_paths"].append(img_path)
-        
+
         if lot_images:
             structure["folders"][lot_name] = lot_images
             structure["total_images"] += len(lot_images)
             print(f"   📂 Lot '{lot_name}': {len(lot_images)} images")
-    
+
     return structure
 
 
@@ -151,16 +151,16 @@ def scan_flat_structure(
         "folders": {},
         "all_image_paths": []
     }
-    
+
     print(f"📄 Detected FLAT structure in: {root}")
-    
+
     for img_path in root.iterdir():
         if is_image_file(img_path):
-            structure["all_image_paths"].append(img_path)
-    
+            structure["all_image_paths"].append(Path(img_path).as_posix())
+
     structure["total_images"] = len(structure["all_image_paths"])
     print(f"   📷 Total images: {structure['total_images']}")
-    
+
     return structure
 
 
@@ -170,18 +170,18 @@ def scan_folder_structure(
 ) -> Dict[str, Any]:  # Returns folder structure
     """Recursively scan folder structure and categorize as flat or nested."""
     root = Path(root_path)
-    
+
     if not root.exists():
         raise ValueError(f"Path does not exist: {root_path}")
-    
+
     image_extensions = get_image_extensions()
     subdirs = get_subdirectories(root)
-    
+
     if subdirs:
         structure = scan_nested_structure(root)
     else:
         structure = scan_flat_structure(root)
-    
+
     print(f"\n✅ Scan complete: {structure['total_images']} total images")
     return structure
 
@@ -193,13 +193,14 @@ def _create_batches_from_flat_structure(
 ) -> List[List[Path]]:  # Returns list of batches
     """Create batches from flat folder structure using round-robin distribution."""
     all_images = folder_info['all_image_paths']
+    all_images = [Path(i).as_posix() for i in all_images]
     num_batches = (len(all_images) + batch_size - 1) // batch_size
     batches = [[] for _ in range(num_batches)]
-    
+
     for i, img_path in enumerate(all_images):
         batch_idx = i % num_batches
         batches[batch_idx].append(img_path)
-    
+
     return batches
 
 
@@ -212,11 +213,11 @@ def _split_large_lot(
     """Split a large lot into multiple batches."""
     batches = []
     lot_size = len(lot_images)
-    
+
     for i in range(0, lot_size, batch_size):
         chunk = lot_images[i:i + batch_size]
         batches.append(chunk)
-    
+
     return batches
 
 
@@ -242,34 +243,34 @@ def _create_batches_from_nested_structure(
     """Create batches from nested folder structure keeping lots together."""
     batches = []
     current_batch = []
-    
+
     for lot_name, lot_images in folder_info['folders'].items():
         lot_size = len(lot_images)
-        
+
         if lot_size > batch_size:
             # Large lot: split across multiple batches
             if current_batch:
                 batches.append(current_batch)
                 current_batch = []
-            
+
             # Split large lot into chunks
             lot_batches = _split_large_lot(lot_images, batch_size, lot_name)
             batches.extend(lot_batches)
-            
+
         elif _add_lot_to_batch(current_batch, lot_images, batch_size):
             # Lot fits in current batch
             pass
-            
+
         else:
             # Lot doesn't fit, start new batch
             if current_batch:
                 batches.append(current_batch)
             current_batch = lot_images.copy()
-    
+
     # Add final batch
     if current_batch:
         batches.append(current_batch)
-    
+
     return batches
 
 # %% ../../nbs/12_inference.multinode_inference.ipynb 49
@@ -278,14 +279,14 @@ def create_smart_batches(
     batch_size: int  # Maximum images per batch
 ) -> List[List[Path]]:  # Returns list of batches (each batch is list of image paths)
     """Create balanced batches from folder structure with smart lot handling."""
-    
+
     structure_type = folder_info['type']
-    
+
     if structure_type == "nested":
         batches = _create_batches_from_nested_structure(folder_info, batch_size)
     else:
         batches = _create_batches_from_flat_structure(folder_info, batch_size)
-    
+
     return batches
 
 
@@ -301,7 +302,7 @@ def create_batch_id(
 def create_batch_list_file_path(
     output_dir: Path,  # output directory
     batch_id: str  # batch id
-     
+
     ) -> Path:
     """Generate batch list file path."""
     return output_dir / "batch_lists" / f"{batch_id}_images.txt"
@@ -310,7 +311,7 @@ def create_batch_list_file_path(
 # %% ../../nbs/12_inference.multinode_inference.ipynb 58
 def setup_output_directory(
     output_dir: Path  # output directory
-     
+
     ) -> Path:
     """Create output directory structure."""
     output_path = Path(output_dir)
@@ -334,15 +335,15 @@ def _serialize_preprocessing_fn(preprocessing_fn: Callable) -> str:
     """Serialize preprocessing function to importable module path."""
     if preprocessing_fn is None:
         return None
-    
+
     # Get the module and function name
     module = inspect.getmodule(preprocessing_fn)
     if module is None:
         raise ValueError(f"Cannot serialize function {preprocessing_fn}: module not found")
-    
+
     module_name = module.__name__
     function_name = preprocessing_fn.__name__
-    
+
     # Return as "module.path.function_name" format
     # If function is in __main__ (notebook), we need to include its source code
     if module_name == "__main__":
@@ -352,7 +353,7 @@ def _serialize_preprocessing_fn(preprocessing_fn: Callable) -> str:
         except (OSError, TypeError):
             raise ValueError(f"Cannot get source code for function {preprocessing_fn}. "
                            f"Please define it in a proper module for HPC execution.")
-    
+
     # Otherwise, return as importable module path
     return ("import", f"{module_name}.{function_name}")
 
@@ -383,7 +384,7 @@ def create_inference_command_from_file(
         "from typing import Tuple",
         "import json"
     ]
-    
+
     # Serialize preprocessing function and kwargs for HPC execution
     if preprocessing_fn is not None:
         serialization = _serialize_preprocessing_fn(preprocessing_fn)
@@ -395,44 +396,44 @@ def create_inference_command_from_file(
         else:
             # Unpack the serialization result into type and value
             serialization_type, serialization_value = serialization
-            
+
             # Check if we need to embed the function's source code
             if serialization_type == "source":
                 # Function is defined in __main__ (notebook), include source code
                 # Use base64 encoding to safely embed source code
                 import base64
-                
+
                 # Convert the function source code string to bytes
                 source_bytes = serialization_value.encode('utf-8')
-                
+
                 # Encode the bytes to base64 for safe transmission
                 source_b64 = base64.b64encode(source_bytes).decode('ascii')
-                
+
                 # Add code to decode and execute the function source in the subprocess
                 python_code_parts.append(
                     "import base64; "  # Import base64 module
                     f"source_code = base64.b64decode('{source_b64}').decode('utf-8'); "  # Decode the function source
                     "exec(source_code)"  # Execute the source code to define the function
                 )
-                
+
                 # Add code to assign the function by its name
                 python_code_parts.append(f"preprocessing_fn = {preprocessing_fn.__name__}")
             else:
                 # Function is in an importable module (not from notebook)
                 # Split the full module path to get module and function name
                 module_path, function_name = serialization_value.rsplit('.', 1)
-                
+
                 # Add code to import the module and get the function
                 python_code_parts.append(
                     f"module = importlib.import_module('{module_path}'); "  # Import the module
                     f"preprocessing_fn = getattr(module, '{function_name}')"  # Get the function from module
                 )
-            
+
             # Handle preprocessing function keyword arguments
             if preprocessing_kwargs:
                 # Convert kwargs dict to JSON string
                 kwargs_json = json.dumps(preprocessing_kwargs).replace("'", "\\'")
-                
+
                 # Add code to parse the JSON string back to a dict
                 python_code_parts.append(f"preprocessing_kwargs = json.loads('{kwargs_json}')")
             else:
@@ -442,7 +443,7 @@ def create_inference_command_from_file(
         # No preprocessing function was provided at all
         python_code_parts.append("preprocessing_fn = None")
         python_code_parts.append("preprocessing_kwargs = None")
-    
+
     # Build list of function arguments (note: this args list is not used in final command)
     args = [
         f"model_path='{model_path}'",  # Path to the trained model file
@@ -452,7 +453,7 @@ def create_inference_command_from_file(
         f"save_heatmap={save_heatmap}",  # Boolean flag to save heatmap visualizations
         f"heatmap_style='{heatmap_style}'",  # Style of heatmap (e.g., "combined", "side_by_side")
         f"compress={compress}",  # Boolean flag to compress the image (JPEG format)
-        f"jpeg_quality={jpeg_quality}"  # JPEG compression quality (0-100, higher is better)    
+        f"jpeg_quality={jpeg_quality}"  # JPEG compression quality (0-100, higher is better)
     ]
     for key, value in kwargs.items():
         if value is None:
@@ -467,7 +468,7 @@ def create_inference_command_from_file(
         else:
             # For other types, convert to string representation
             args.append(f"{key}={repr(value)}")
-    
+
     # Build the final command
     call_args = ', '.join([
         f"model_path='{model_path}'",
@@ -481,9 +482,9 @@ def create_inference_command_from_file(
         "preprocessing_fn=preprocessing_fn",
         "preprocessing_kwargs=preprocessing_kwargs"
     ])
-    
+
     python_code = "; ".join(python_code_parts) + f"; predict_image_list_from_file_enhanced({call_args})"
-    
+
     # Return proper command list format for HPC execution
     return ["python", "-c", python_code]
 
@@ -514,7 +515,7 @@ def create_inference_command_from_filev03(
         "from be_vision_ad_tools.inference.prediction_system import *",
         "import importlib"
     ]
-    
+
     # Handle preprocessing function as string import
     if preprocessing_fn_path:
         # User provided explicit module path (e.g. "my_module.preprocessing.my_func")
@@ -540,11 +541,11 @@ def create_inference_command_from_filev03(
             print("   Please move it to a module or pass preprocessing_fn_path explicitly")
             print("   Example: preprocessing_fn_path='my_module.preprocessing.my_function'")
             preprocessing_fn = None
-    
+
     # Set to None if we couldn't resolve it
     if preprocessing_fn is None and not preprocessing_fn_path:
         python_code_parts.append("preprocessing_fn = None")
-    
+
     # Build function call arguments
     args = [
         f"model_path='{model_path}'",
@@ -606,9 +607,9 @@ def create_single_inference_job(
     """Create single HPC inference job from batch."""
     batch_id = create_batch_id(batch_index)
     batch_list_file = create_batch_list_file_path(output_dir, batch_id)
-    
+
     create_batch_list_file(batch, batch_list_file)
-    
+
     command = create_inference_command_from_filev03(
         model_path=model_path,
         batch_list_file=batch_list_file,
@@ -622,13 +623,13 @@ def create_single_inference_job(
         preprocessing_kwargs=preprocessing_kwargs,
         **kwargs
     )
-    
+
     job = create_hpc_job_object(
         command=command,
         cores=cores,
         description=f"inference_{batch_id}"
     )
-    
+
     return job
 
 
@@ -649,15 +650,15 @@ def create_multinode_inference_jobs(
 ) -> List:  # Returns list of HPC_Job objects
     """Convert image batches into HPC_Job objects for multinode execution."""
     import logging
-    
+
     logger = logging.getLogger(__name__)
-    
+
     logger.info(f"Creating {len(batches)} HPC jobs")
     logger.info(f"Model: {model_path}")
     logger.info(f"Output: {output_dir}")
-    
+
     output_path = setup_output_directory(output_dir)
-    
+
     jobs = []
     for i, batch in enumerate(batches):
         job = create_single_inference_job(
@@ -676,7 +677,7 @@ def create_multinode_inference_jobs(
         )
         jobs.append(job)
         logger.info(f"Job {i+1}: {job.description} with {len(batch)} images")
-    
+
     logger.info(f"Created {len(jobs)} jobs total")
     return jobs
 
@@ -687,23 +688,23 @@ def handle_nested_folders(
     batch_size: int = 100  # Maximum images per batch
 ) -> List[List[Path]]:  # Returns batches ready for job creation
     """Main entry point for nested folder processing (folder → lot → images)."""
-    
+
     print(f"🎯 Processing nested folder structure")
     print(f"   Root: {root_path}")
     print(f"   Batch size: {batch_size}")
-    
+
     # Step 1: Scan folder structure
     print(f"\n📡 Step 1: Scanning folder structure...")
     folder_info = scan_folder_structure(root_path)
-    
+
     # Step 2: Create smart batches
     print(f"\n🔨 Step 2: Creating smart batches...")
     batches = create_smart_batches(folder_info, batch_size)
-    
+
     print(f"\n✅ Nested folder processing complete!")
     print(f"   Total images: {folder_info['total_images']}")
     print(f"   Total batches: {len(batches)}")
-    
+
     return batches
 
 
@@ -715,13 +716,13 @@ def validate_inference_inputs(
     num_nodes: int  # Number of HPC nodes
 ) -> Tuple[Path, Path]:  # Returns validated (model_path, root_path) as Path objects
     """Validate all inputs before starting inference job creation."""
-    
+
     # Validate model path
     model_path = Path(model_path)
     if not model_path.exists():
         raise FileNotFoundError(f"❌ Model not found: {model_path}")
     print(f"✅ Model found: {model_path}")
-    
+
     # Validate root path
     root_path = Path(root_path)
     if not root_path.exists():
@@ -729,17 +730,17 @@ def validate_inference_inputs(
     if not root_path.is_dir():
         raise ValueError(f"❌ Root path must be a directory: {root_path}")
     print(f"✅ Root path valid: {root_path}")
-    
+
     # Validate batch size
     if batch_size <= 0:
         raise ValueError(f"❌ Batch size must be positive, got: {batch_size}")
     print(f"✅ Batch size valid: {batch_size}")
-    
+
     # Validate num_nodes
     if num_nodes <= 0:
         raise ValueError(f"❌ Number of nodes must be positive, got: {num_nodes}")
     print(f"✅ Number of nodes valid: {num_nodes}")
-    
+
     return model_path, root_path
 
 
@@ -752,39 +753,39 @@ def print_execution_summary(
     output_dir: Path  # Output directory
 ) -> None:  # Prints summary to console
     """Print comprehensive summary of job distribution setup."""
-    
+
     print("\n" + "="*70)
     print("🎯 INFERENCE JOB DISTRIBUTION SUMMARY")
     print("="*70)
-    
+
     # Folder structure info
     print(f"\n📁 Data Structure:")
     print(f"   Type: {folder_info['type'].upper()}")
     print(f"   Total Images: {folder_info['total_images']:,}")
     if folder_info['type'] == 'nested':
         print(f"   Number of Lots: {len(folder_info['folders'])}")
-    
+
     # Batch info
     print(f"\n📦 Batch Configuration:")
     print(f"   Total Batches: {len(batches)}")
     batch_sizes = [len(b) for b in batches]
     print(f"   Batch Sizes: min={min(batch_sizes)}, max={max(batch_sizes)}, avg={sum(batch_sizes)//len(batch_sizes)}")
-    
+
     # Job info
     print(f"\n🏭 HPC Jobs:")
     print(f"   Total Jobs Created: {len(jobs)}")
     print(f"   Jobs per Node (approx): {len(jobs) / num_nodes:.1f}")
-    
+
     # Node info
     print(f"\n🖥️  Compute Resources:")
     print(f"   Number of Nodes: {num_nodes}")
     print(f"   Cores per Job: 4")  # Hardcoded in create_multinode_inference_jobs
-    
+
     # Output info
     print(f"\n💾 Output:")
     print(f"   Directory: {output_dir}")
     print(f"   Batch Lists: {output_dir / 'batch_lists'}")
-    
+
     print("\n" + "="*70)
     print("✅ Setup Complete - Ready for Execution!")
     print("="*70 + "\n")
@@ -807,12 +808,12 @@ def distribute_folder_inference(
     **kwargs
 ) -> Dict[str, Any]:  # Returns execution summary
     """Smart inference distribution - automatically handles flat and nested folder structures."""
-    
+
     from be_vision_ad_tools.inference.multinode_from_aiop_tool import DistributeHPC
-    
+
     print("🚀 SMART FOLDER INFERENCE DISTRIBUTION")
     print("="*70)
-    
+
     # Step 1: Validate inputs (fail fast)
     print("\n📋 Step 1: Validating inputs...")
     model_path, root_path = validate_inference_inputs(
@@ -824,15 +825,15 @@ def distribute_folder_inference(
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     print(f"✅ Output directory: {output_dir}")
-    
+
     # Step 2: Scan folder structure (auto-detect flat vs nested)
     print(f"\n📡 Step 2: Scanning folder structure...")
     folder_info = scan_folder_structure(root_path)
-    
+
     # Step 3: Create smart batches
     print(f"\n🔨 Step 3: Creating smart batches...")
     batches = create_smart_batches(folder_info, batch_size)
-    
+
     # Step 4: Create HPC jobs
     print(f"\n🏭 Step 4: Creating HPC jobs...")
     jobs = create_multinode_inference_jobs(
@@ -847,7 +848,7 @@ def distribute_folder_inference(
         preprocess_fn_kwargs=preprocess_fn_kwargs,
         **kwargs
     )
-    
+
     # Step 5: Print summary
     print_execution_summary(
         folder_info=folder_info,
@@ -856,7 +857,7 @@ def distribute_folder_inference(
         num_nodes=num_nodes,
         output_dir=output_dir
     )
-    
+
     # Step 6: Execute or dry run
     if dry_run:
         print("🔍 DRY RUN MODE - Jobs created but not executed")
@@ -867,7 +868,7 @@ def distribute_folder_inference(
         distributor.set_jobs(jobs)
         distributor.start()
         print("\n✅ Job execution completed!")
-    
+
     # Return summary
     return {
         "structure_type": folder_info['type'],
