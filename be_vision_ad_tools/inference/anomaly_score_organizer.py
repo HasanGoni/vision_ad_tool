@@ -72,23 +72,27 @@ def determine_score_folder(
 # %% ../../nbs/14_inference.anomaly_score_organizer.ipynb 7
 def create_score_folders(
     output_dir: Path,  # Base output directory
-    score_thresholds: List[float]  # List of score thresholds
+    score_thresholds: List[float],  # List of score thresholds
+    image_folder_name: str  # Name of the folder to contain threshold folders (e.g., "g_imgs")
 ) -> Dict[str, Path]:  # Returns dict mapping threshold strings to folder paths
     """
     Create subdirectories for each score threshold.
 
+    Creates folders in output_dir/image_folder_name/threshold/
     Returns a dictionary mapping threshold values to their folder paths.
     """
     output_dir = Path(output_dir)
+    # Create the base path: output_dir/image_folder_name/
+    base_path = output_dir / image_folder_name
     folder_map = {}
 
     for threshold in score_thresholds:
         folder_name = str(threshold)
-        folder_path = output_dir / folder_name
+        folder_path = base_path / folder_name
         folder_path.mkdir(parents=True, exist_ok=True)
         folder_map[folder_name] = folder_path
 
-    print(f"✅ Created {len(folder_map)} score folders in {output_dir}")
+    print(f"✅ Created {len(folder_map)} score folders in {base_path}")
     for threshold, path in sorted(folder_map.items()):
         print(f"   📁 {threshold}: {path}")
 
@@ -125,11 +129,13 @@ def save_image_by_score(
     anomaly_score: float,  # Anomaly score for the image
     output_dir: Path,  # Base output directory
     score_thresholds: List[float],  # List of score thresholds
+    image_folder_name: str,  # Name of the folder to contain threshold folders (e.g., "g_imgs")
     copy_mode: bool = True  # If True, copy files; if False, move files
 ) -> Path:  # Returns the destination path
     """
     Save (copy or move) an image to the appropriate score folder.
 
+    Saves images to output_dir/image_folder_name/threshold/
     Returns the destination path where the image was saved.
     """
     image_path = Path(image_path)
@@ -139,7 +145,9 @@ def save_image_by_score(
 
     # Determine target folder
     folder_name = determine_score_folder(anomaly_score, score_thresholds)
-    target_folder = output_dir / folder_name
+    # Create the base path: output_dir/image_folder_name/
+    base_path = output_dir / image_folder_name
+    target_folder = base_path / folder_name
     target_folder.mkdir(parents=True, exist_ok=True)
 
     # Create destination path
@@ -158,6 +166,7 @@ def organize_images_by_score(
     prediction_results: List[Dict[str, Any]],  # List of prediction results from predict_image_list
     output_dir: Union[str, Path],  # Base output directory
     score_thresholds: List[float] = [0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],  # Score thresholds
+    image_folder_name: str = "g_imgs",  # Name of the folder to contain threshold folders (e.g., "g_imgs")
     copy_mode: bool = True,  # If True, copy files; if False, move files
     save_metadata: bool = True  # If True, save metadata JSON for each folder
 ) -> Dict[str, Any]:  # Returns organization statistics
@@ -168,6 +177,7 @@ def organize_images_by_score(
         prediction_results: List of prediction results, each containing 'image_path' and 'anomaly_score'
         output_dir: Base directory where score folders will be created
         score_thresholds: List of threshold values (e.g., [0.5, 1.0] for simple two-folder setup)
+        image_folder_name: Name of the folder to contain threshold folders (e.g., "g_imgs")
         copy_mode: Whether to copy (True) or move (False) images
         save_metadata: Whether to save JSON metadata for each folder
 
@@ -180,12 +190,13 @@ def organize_images_by_score(
     print("\n🗂️  ORGANIZING IMAGES BY ANOMALY SCORE")
     print("="*70)
     print(f"📂 Output directory: {output_dir}")
+    print(f"📁 Image folder name: {image_folder_name}")
     print(f"📊 Score thresholds: {score_thresholds}")
     print(f"📋 Total images: {len(prediction_results)}")
     print(f"🔄 Mode: {'COPY' if copy_mode else 'MOVE'}")
 
     # Create score folders
-    folder_map = create_score_folders(output_dir, score_thresholds)
+    folder_map = create_score_folders(output_dir, score_thresholds, image_folder_name)
 
     # Track statistics
     folder_stats = {str(t): {'count': 0, 'images': [], 'scores': []} for t in score_thresholds}
@@ -210,6 +221,7 @@ def organize_images_by_score(
                 anomaly_score=anomaly_score,
                 output_dir=output_dir,
                 score_thresholds=score_thresholds,
+                image_folder_name=image_folder_name,
                 copy_mode=copy_mode
             )
 
@@ -860,6 +872,7 @@ def create_posters_for_score_folders(
     output_dir: Union[str, Path],  # Base output directory with score folders
     image_index_df: pd.DataFrame,  # Dataframe with image indices
     score_thresholds: List[float],  # List of score thresholds
+    image_folder_name: str = "g_imgs",  # Name of the folder containing threshold folders (e.g., "g_imgs")
     images_per_poster: int = 20,  # Number of images per poster
     image_size: Tuple[int, int] = (224, 224),  # Size of each image in the poster
     grid_cols: int = 5,  # Number of columns in the grid
@@ -887,6 +900,7 @@ def create_posters_for_score_folders(
         output_dir: Base directory containing score folders
         image_index_df: DataFrame with image indices
         score_thresholds: List of threshold values
+        image_folder_name: Name of the folder containing threshold folders (e.g., "g_imgs")
         images_per_poster: How many images per poster (last poster may have fewer)
         image_size: Size of each image in the poster
         grid_cols: Number of columns in the grid
@@ -914,9 +928,12 @@ def create_posters_for_score_folders(
     print("\n🖼️  CREATING POSTERS FOR SCORE FOLDERS")
     print("="*70)
 
+    # Base path: output_dir/image_folder_name/
+    base_path = output_dir / image_folder_name
+
     for threshold in score_thresholds:
         folder_name = str(threshold)
-        folder_path = output_dir / folder_name
+        folder_path = base_path / folder_name
 
         if not folder_path.exists():
             print(f"⚠️  Folder {folder_name} does not exist, skipping...")
@@ -949,6 +966,7 @@ def predict_and_organize_by_score(
     image_list_file: Union[str, Path],  # Text file with image paths (one per line)
     output_dir: Union[str, Path],  # Base output directory for organized images
     score_thresholds: List[float] = [0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],  # Score thresholds
+    image_folder_name: str = "g_imgs",  # Name of the folder to contain threshold folders (e.g., "g_imgs")
     batch_id: Optional[str] = None,  # Optional batch identifier
     copy_mode: bool = True,  # If True, copy files; if False, move files
     save_metadata: bool = True,  # If True, save metadata JSON for each folder
@@ -979,6 +997,7 @@ def predict_and_organize_by_score(
             Examples:
             - [0.5, 1.0] for simple two-folder setup
             - [0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0] for fine-grained organization
+        image_folder_name: Name of the folder to contain threshold folders (e.g., "g_imgs")
         batch_id: Optional identifier for this batch
         copy_mode: Whether to copy (True) or move (False) images
         save_metadata: Whether to save JSON metadata for each folder
@@ -1044,6 +1063,7 @@ def predict_and_organize_by_score(
         prediction_results=prediction_results,
         output_dir=output_dir,
         score_thresholds=score_thresholds,
+        image_folder_name=image_folder_name,
         copy_mode=copy_mode,
         save_metadata=save_metadata
     )
@@ -1056,6 +1076,7 @@ def predict_and_organize_by_score(
             output_dir=output_dir,
             image_index_df=image_index_df,
             score_thresholds=score_thresholds,
+            image_folder_name=image_folder_name,
             images_per_poster=images_per_poster,
             image_size=image_size,
             grid_cols=grid_cols,
@@ -1272,6 +1293,7 @@ def predict_and_organize_by_score(
     image_list_file: Union[str, Path],  # Text file with image paths (one per line)
     output_dir: Union[str, Path],  # Base output directory for organized images
     score_thresholds: List[float] = [0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],  # Score thresholds
+    image_folder_name: str = "g_imgs",  # Name of the folder to contain threshold folders (e.g., "g_imgs")
     batch_id: Optional[str] = None,  # Optional batch identifier
     copy_mode: bool = True,  # If True, copy files; if False, move files
     save_metadata: bool = True,  # If True, save metadata JSON for each folder
@@ -1294,6 +1316,7 @@ def predict_and_organize_by_score(
             Examples:
             - [0.5, 1.0] for simple two-folder setup
             - [0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0] for fine-grained organization
+        image_folder_name: Name of the folder to contain threshold folders (e.g., "g_imgs")
         batch_id: Optional identifier for this batch
         copy_mode: Whether to copy (True) or move (False) images
         save_metadata: Whether to save JSON metadata for each folder
@@ -1338,6 +1361,7 @@ def predict_and_organize_by_score(
         prediction_results=prediction_results,
         output_dir=output_dir,
         score_thresholds=score_thresholds,
+        image_folder_name=image_folder_name,
         copy_mode=copy_mode,
         save_metadata=save_metadata
     )
