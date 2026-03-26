@@ -1684,6 +1684,8 @@ def train_model_and_create_posters(
     if layers is None:
         if model_name.lower() in ["padim", "stfpm"]:
             layers = ["layer1", "layer2", "layer3"]
+        elif model_name.lower() == "patchcore":
+            layers = ["layer2", "layer3"]
         else:
             layers = ["layer3"]  # Default for other models
 

@@ -39,28 +39,28 @@ from be_vision_ad_tools.inference.multinode_from_aiop_tool import (
 )
 
 
-# %% ../../nbs/13_inference.unified_inference.ipynb 13
+# %% ../../nbs/13_inference.unified_inference.ipynb 16
 def resolve_test_folders_smart(
     test_folders: Union[str, Path, List[Union[str, Path]]]  # Folder(s), file(s), or mixed
 ) -> List[Path]:  # Returns list of image paths
     """Resolve test_folders to image paths - handles lists, flat folders, and nested folders."""
-    
+
     if not isinstance(test_folders, list):
         test_folders = [test_folders]
-    
+
     image_paths = []
-    
+
     for folder_or_file in test_folders:
         path = Path(folder_or_file)
-        
+
         if not path.exists():
             print(f"⚠️  Warning: '{folder_or_file}' does not exist")
             continue
-        
+
         if path.is_file() and is_image_file(path):
             # It's an image file
             image_paths.append(path)
-            
+
         elif path.is_dir():
             # It's a directory - use smart folder scanning
             try:
@@ -74,15 +74,15 @@ def resolve_test_folders_smart(
                     image_paths.extend(path.glob(ext.upper()))
         else:
             print(f"⚠️  Warning: '{folder_or_file}' is not a valid file or directory")
-    
+
     # Remove duplicates and sort
     unique_paths = sorted(set(image_paths))
-    
+
     print(f"📁 Resolved {len(unique_paths)} images from {len(test_folders)} input path(s)")
     return unique_paths
 
 
-# %% ../../nbs/13_inference.unified_inference.ipynb 19
+# %% ../../nbs/13_inference.unified_inference.ipynb 22
 def in_jupyter_notebook() -> bool:
     """Check if code is running in a Jupyter notebook."""
     try:
@@ -98,13 +98,13 @@ def in_jupyter_notebook() -> bool:
         return False  # Probably standard Python interpreter
 
 
-# %% ../../nbs/13_inference.unified_inference.ipynb 21
+# %% ../../nbs/13_inference.unified_inference.ipynb 24
 def has_bsub_command() -> bool:
     """Check if bsub command is available (HPC environment)."""
     return shutil.which("bsub") is not None
 
 
-# %% ../../nbs/13_inference.unified_inference.ipynb 23
+# %% ../../nbs/13_inference.unified_inference.ipynb 26
 def detect_execution_environment() -> str:
     """Detect execution environment and return appropriate mode."""
     if in_jupyter_notebook():
@@ -115,7 +115,7 @@ def detect_execution_environment() -> str:
         return "parallel"
 
 
-# %% ../../nbs/13_inference.unified_inference.ipynb 30
+# %% ../../nbs/13_inference.unified_inference.ipynb 33
 def run_jupyter_inference(
     model_path: Union[str, Path], # Path to the model file
     image_path: Union[str, Path, List[Path]], # List of image paths to process
@@ -131,18 +131,18 @@ def run_jupyter_inference(
     """Execute inference serially using simple for-loop (Jupyter mode)."""
 
     image_paths = resolve_test_folders_smart(image_path)
-    
+
     print(f"📓 Running in Jupyter mode (serial for-loop)")
     print(f"   Processing {len(image_paths)} images sequentially...")
-    
+
     model_path = Path(model_path)
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
-    
+
     # Create temporary batch file with all images
     batch_file = output_dir / "jupyter_batch_images.txt"
     create_batch_list_file(image_paths, batch_file)
-    
+
     # Use existing prediction system
     results = predict_image_list_from_file_enhanced(
         model_path=model_path,
@@ -157,9 +157,9 @@ def run_jupyter_inference(
         preprocessing_kwargs=preprocessing_kwargs,
         **kwargs
     )
-    
+
     print(f"✅ Jupyter inference complete: {len(image_paths)} images processed")
-    
+
     return {
         "mode": "jupyter",
         "total_images": len(image_paths),
@@ -168,15 +168,15 @@ def run_jupyter_inference(
     }
 
 
-# %% ../../nbs/13_inference.unified_inference.ipynb 44
+# %% ../../nbs/13_inference.unified_inference.ipynb 47
 def _process_batch_worker(args: tuple) -> Dict[str, Any]:
     """Worker function for parallel batch processing."""
     model_path, batch_images, batch_id, output_dir, save_heatmaps, heatmap_style, compress, jpeg_quality, preprocessing_fn, preprocessing_kwargs, kwargs = args
-    
+
     # Create batch file
     batch_list_file = Path(output_dir) / "batch_lists" / f"{batch_id}_images.txt"
     create_batch_list_file(batch_images, batch_list_file)
-    
+
     # Process batch
     results = predict_image_list_from_file(
         model_path=model_path,
@@ -191,7 +191,7 @@ def _process_batch_worker(args: tuple) -> Dict[str, Any]:
         preprocessing_kwargs=preprocessing_kwargs,
         **kwargs
     )
-    
+
     return {
         "batch_id": batch_id,
         "num_images": len(batch_images),
@@ -199,7 +199,7 @@ def _process_batch_worker(args: tuple) -> Dict[str, Any]:
     }
 
 
-# %% ../../nbs/13_inference.unified_inference.ipynb 45
+# %% ../../nbs/13_inference.unified_inference.ipynb 48
 def run_parallel_inference(
     model_path: Union[str, Path],
     image_path: Union[str, Path, List[Path]],
@@ -219,7 +219,7 @@ def run_parallel_inference(
 
     print("🚀 SMART FOLDER INFERENCE DISTRIBUTION")
     print("="*70)
-    
+
     # Step 1: Validate inputs (fail fast)
     print("\n📋 Step 1: Validating inputs...")
     model_path, root_path = validate_inference_inputs(
@@ -231,11 +231,11 @@ def run_parallel_inference(
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     print(f"✅ Output directory: {output_dir}")
-    
+
     # Step 2: Scan folder structure (auto-detect flat vs nested)
     print(f"\n📡 Step 2: Scanning folder structure...")
     folder_info = scan_folder_structure(root_path)
-    
+
     # Step 3: Create smart batches
     print(f"\n🔨 Step 3: Creating smart batches...")
     batches = create_smart_batches(folder_info, batch_size)
@@ -245,17 +245,17 @@ def run_parallel_inference(
     # Split into batches
     image_batches = create_smart_batches(
         Path(image_path), batch_size=batch_size)
-    
+
     if num_workers is None:
         num_workers = cpu_count()
-    
+
     print(f"⚡ Running in parallel mode with {num_workers} workers")
-    
+
     model_path = Path(model_path)
     output_path = Path(output_dir)
     output_path.mkdir(parents=True, exist_ok=True)
-    
-    
+
+
     # Prepare worker arguments
     worker_args = []
     for i, batch in enumerate(image_batches):
@@ -270,7 +270,7 @@ def run_parallel_inference(
             **kwargs
         }
         worker_args.append((model_path, batch, batch_id, output_path, batch_kwargs))
-    
+
     # Execute in parallel
     with Pool(processes=num_workers) as pool:
         batch_results = list(tqdm(
@@ -278,9 +278,9 @@ def run_parallel_inference(
             total=len(worker_args),
             desc="Processing batches"
         ))
-    
+
     print(f"✅ Parallel inference complete: {len(image_batches)} batches processed")
-    
+
     return {
         "mode": "parallel",
         "total_images": len(image_paths),
@@ -291,7 +291,7 @@ def run_parallel_inference(
     }
 
 
-# %% ../../nbs/13_inference.unified_inference.ipynb 51
+# %% ../../nbs/13_inference.unified_inference.ipynb 54
 def unified_inference(
     model_path: Union[str, Path],
     test_folders: Union[str, Path, List[Union[str, Path]]],
@@ -305,7 +305,7 @@ def unified_inference(
     **kwargs
 ) -> Dict[str, Any]:
     """Unified inference function that automatically selects execution strategy.
-    
+
     Args:
         model_path: Path to trained model
         test_folders: Image folder(s) or file path(s)
@@ -317,14 +317,14 @@ def unified_inference(
         save_heatmaps: Whether to save visualization heatmaps
         heatmap_style: Visualization style
         **kwargs: Additional arguments passed to inference functions
-    
+
     Returns:
         Dictionary with inference results and metadata
     """
-    
+
     print("🚀 Starting Unified Inference System")
     print("=" * 50)
-    
+
     # Auto-detect or validate execution mode
     if execution_mode == "auto":
         execution_mode = detect_execution_environment()
@@ -333,20 +333,20 @@ def unified_inference(
         if execution_mode not in ["jupyter", "hpc", "parallel"]:
             raise ValueError(f"Invalid execution_mode: {execution_mode}")
         print(f"🎯 Using specified mode: {execution_mode}")
-    
+
     # Resolve image paths (handles lists, flat folders, and nested folders)
     image_paths = resolve_test_folders_smart(test_folders)
-    
+
     if not image_paths:
         raise ValueError("No valid images found in test_folders")
-    
+
     # Set default output directory based on mode
     if output_dir is None:
         output_dir = f"{execution_mode}_inference_results"
-    
+
     # Execute based on detected/specified mode
     print("=" * 50)
-    
+
     if execution_mode == "jupyter":
         results = run_jupyter_inference(
             model_path=model_path,
@@ -356,7 +356,7 @@ def unified_inference(
             heatmap_style=heatmap_style,
             **kwargs
         )
-    
+
     elif execution_mode == "hpc":
         results = run_hpc_multinode_inference(
             model_path=model_path,
@@ -368,7 +368,7 @@ def unified_inference(
             heatmap_style=heatmap_style,
             **kwargs
         )
-    
+
     elif execution_mode == "parallel":
         results = run_parallel_inference(
             model_path=model_path,
@@ -380,12 +380,12 @@ def unified_inference(
             heatmap_style=heatmap_style,
             **kwargs
         )
-    
+
     print("=" * 50)
     print(f"🎉 Unified inference complete!")
     print(f"   Mode: {results['mode']}")
     print(f"   Images: {results['total_images']}")
     print(f"   Output: {results['output_dir']}")
-    
+
     return results
 

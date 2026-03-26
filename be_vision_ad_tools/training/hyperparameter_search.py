@@ -89,7 +89,7 @@ def simple_hyperparameter_search(
     
     # Set defaults if none provided
     if model_names is None:
-        model_names = ['padim']  # Start with padim
+        model_names = ['padim', 'patchcore']  # Start with padim and patchcore
     if backbones is None:
         backbones = ['resnet18', 'resnet50']  # Start with 2 backbones
     if n_features_list is None:
@@ -1288,7 +1288,7 @@ def diff_parameter_and_save_poster(
     abnormal_dir:str, # abnormal directory name
     class_name:str, # class name
     test_images:Union[str,Path,List], # test images path
-    model_names:List[str]=['padim'], # model names
+    model_names:List[str]=['padim', 'patchcore'], # model names
     backbones:List[str]=['wide_resnet50'], # backbones
     n_features_list:List[int]=[64], # number of features
     layers:List[List[str]]=[['layer1', 'layer2', 'layer3']], # layers
@@ -1312,7 +1312,7 @@ def diff_parameter_and_save_poster(
         result_path_name = "test_hyperparameter_models"
 
     if model_names is None:
-        model_names = ['padim']
+        model_names = ['padim', 'patchcore']
     if backbones is None:
         backbones = ['resnet18']
     if n_features_list is None:

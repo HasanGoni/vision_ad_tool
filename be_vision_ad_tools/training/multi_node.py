@@ -76,7 +76,7 @@ def generate_training_tasks(
     
     # Set defaults
     if model_names is None:
-        model_names = ['padim']
+        model_names = ['padim', 'patchcore']
     if backbones is None:
         backbones = ['wide_resnet50_2']
     if n_features_list is None:

@@ -4,8 +4,8 @@
 
 # %% auto 0
 __all__ = ['detect_environment', 'reset_environment_cache', 'get_smart_defaults', 'ModelType', 'BackboneType', 'ThresholdMethod',
-           'FlexibleTrainingConfig', 'train_anomaly_model', 'validate_model_name', 'validate_backbone_name', 'main_',
-           'run_inference_after_training']
+           'FlexibleTrainingConfig', 'get_model_configs', 'train_anomaly_model', 'validate_model_name',
+           'validate_backbone_name', 'main_', 'run_inference_after_training']
 
 # %% ../../nbs/04_training.flexible_anomaly_trainer.ipynb 4
 import sys
@@ -278,7 +278,9 @@ class FlexibleTrainingConfig:
     n_features: int = 100
     model_file_name: str = "model.pth"
 
-
+    # PatchCore-specific configuration
+    coreset_sampling_ratio: float = 0.1  # PatchCore coreset sampling ratio (0-1)
+    num_neighbors: int = 9  # PatchCore k-NN neighbors
 
     # Image preprocessing - CORRECTED for anomalib v1.2.0 with anomalib defaults
     image_size: Tuple[int, int] = (256, 256)  # Anomalib standard default (not 224)
@@ -394,6 +396,11 @@ class FlexibleTrainingConfig:
         if not isinstance(self.image_size, (tuple, list)) or len(self.image_size) != 2:
             raise ValueError("Image size must be a tuple/list of 2 integers")
 
+        # Validate PatchCore-specific parameters
+        if not (0 < self.coreset_sampling_ratio <= 1):
+            raise ValueError(f"coreset_sampling_ratio must be between 0 and 1, got {self.coreset_sampling_ratio}")
+        if self.num_neighbors < 1:
+            raise ValueError(f"num_neighbors must be a positive integer, got {self.num_neighbors}")
 
 # %% ../../nbs/04_training.flexible_anomaly_trainer.ipynb 21
 @patch_to(FlexibleTrainingConfig)
@@ -418,7 +425,42 @@ def from_dict(cls, config_dict: Dict[str, Any]) -> 'FlexibleTrainingConfig':
     """Create config from dictionary."""
     return cls(**config_dict)
 
-# %% ../../nbs/04_training.flexible_anomaly_trainer.ipynb 25
+# %% ../../nbs/04_training.flexible_anomaly_trainer.ipynb 24
+def get_model_configs(
+    data_root: Union[str, Path] = None,
+    **shared_kwargs
+) -> list:
+    """Return optimized configs for PaDiM and PatchCore.
+
+    Args:
+        data_root: Path to data root (passed to both configs)
+        **shared_kwargs: Any shared FlexibleTrainingConfig kwargs applied to both
+
+    Returns:
+        List of [padim_config, patchcore_config]
+    """
+    base_kwargs = {}
+    if data_root is not None:
+        base_kwargs['data_root'] = data_root
+    base_kwargs.update(shared_kwargs)
+
+    padim_config = FlexibleTrainingConfig(
+        model_name=ModelType.PADIM,
+        backbone=BackboneType.RESNET18,
+        layers=["layer1", "layer2", "layer3"],
+        **base_kwargs,
+    )
+    patchcore_config = FlexibleTrainingConfig(
+        model_name=ModelType.PATCHCORE,
+        backbone=BackboneType.WIDE_RESNET50,
+        layers=["layer2", "layer3"],
+        coreset_sampling_ratio=0.1,
+        num_neighbors=9,
+        **base_kwargs,
+    )
+    return [padim_config, patchcore_config]
+
+# %% ../../nbs/04_training.flexible_anomaly_trainer.ipynb 26
 def _extract_model_inference_info(
     model # Model could be trained or exported model
     ) -> Dict[str, Any]:
@@ -444,7 +486,7 @@ def _extract_model_inference_info(
     
     return inference_info
 
-# %% ../../nbs/04_training.flexible_anomaly_trainer.ipynb 33
+# %% ../../nbs/04_training.flexible_anomaly_trainer.ipynb 34
 def train_anomaly_model(
     config: Union[FlexibleTrainingConfig, Dict[str, Any], str, Path]
 ) -> Dict[str, Any]:
@@ -525,11 +567,16 @@ def train_anomaly_model(
         }
         
         # Add model-specific configurations
-        if config.model_name in [ModelType.PADIM, ModelType.STFPM]:
+        if config.model_name in [ModelType.PADIM, ModelType.STFPM, ModelType.PATCHCORE]:
             model_config['layers'] = config.layers
 
         if config.model_name in [ModelType.PADIM]:
             model_config['n_features'] = config.n_features
+
+        if config.model_name == ModelType.PATCHCORE:
+            model_config['coreset_sampling_ratio'] = config.coreset_sampling_ratio
+            model_config['num_neighbors'] = config.num_neighbors
+
         print(f'{"="*100}')
         print(f'model_config: {model_config}')
 
@@ -672,7 +719,7 @@ def train_anomaly_model(
         }
         return error_results
 
-# %% ../../nbs/04_training.flexible_anomaly_trainer.ipynb 43
+# %% ../../nbs/04_training.flexible_anomaly_trainer.ipynb 44
 def _extract_model_inference_info(model) -> Dict[str, Any]:
     """Extract threshold and pixel statistics from trained model for inference.
     
@@ -706,7 +753,7 @@ def _extract_model_inference_info(model) -> Dict[str, Any]:
     
     return inference_info
 
-# %% ../../nbs/04_training.flexible_anomaly_trainer.ipynb 44
+# %% ../../nbs/04_training.flexible_anomaly_trainer.ipynb 45
 def validate_model_name(model_name: Union[str, ModelType])->ModelType:
     if isinstance(model_name, str):
         try:
@@ -717,7 +764,7 @@ def validate_model_name(model_name: Union[str, ModelType])->ModelType:
     return model_name
 
 
-# %% ../../nbs/04_training.flexible_anomaly_trainer.ipynb 45
+# %% ../../nbs/04_training.flexible_anomaly_trainer.ipynb 46
 def validate_backbone_name(backbone_name: str)->BackboneType:
     """Validate the backbone name."""
     if isinstance(backbone_name, str):
@@ -730,7 +777,7 @@ def validate_backbone_name(backbone_name: str)->BackboneType:
 
 validate_backbone_name("resnet18")
 
-# %% ../../nbs/04_training.flexible_anomaly_trainer.ipynb 47
+# %% ../../nbs/04_training.flexible_anomaly_trainer.ipynb 48
 @call_parse
 def main_(
     data_root: str, # Name of the directory containing the data, inside this folder there should two other folder for normal and abnormal images
@@ -873,7 +920,7 @@ def main_(
     
     return train_anomaly_model(config)
 
-# %% ../../nbs/04_training.flexible_anomaly_trainer.ipynb 73
+# %% ../../nbs/04_training.flexible_anomaly_trainer.ipynb 74
 def run_inference_after_training(
     training_results: Dict[str, Any],
     validation_images: Optional[Union[str, Path, List[Union[str, Path]]]] = None,
