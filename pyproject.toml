@@ -28,6 +28,7 @@ dependencies = [
     "scikit-learn>=1.7.2",
     "timm>=1.0.20",
     "torchaudio>=2.9.0",
+    "watermark>=2.6.0",
 ]
 
 #[[tool.uv.index]]
