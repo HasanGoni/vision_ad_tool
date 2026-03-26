@@ -19,7 +19,7 @@ Add PatchCore model support alongside PaDiM throughout the entire vision_ad_tool
 
 ## Architecture
 
-A `get_model_configs()` helper function returns a list of `FlexibleTrainingConfig` instances for both PaDiM and PatchCore with their respective optimized defaults. All notebook demo cells loop over this list.
+A `get_model_configs()` helper function returns a list of `FlexibleTrainingConfig` instances for both PaDiM and PatchCore with their respective optimized defaults. This function must be in an `#| export` cell in notebook 04 so it becomes part of `be_vision_ad_tools.training.flexible_trainer` and can be imported by other notebooks. All notebook demo cells loop over this list.
 
 ```python
 def get_model_configs() -> list:
@@ -31,7 +31,7 @@ def get_model_configs() -> list:
     )
     patchcore_config = FlexibleTrainingConfig(
         model_name=ModelType.PATCHCORE,
-        backbone="wide_resnet50_2",
+        backbone=BackboneType.WIDE_RESNET50,
         layers=["layer2", "layer3"],
         coreset_sampling_ratio=0.1,
         num_neighbors=9,
@@ -82,9 +82,22 @@ Add PatchCore-specific fields to the dataclass:
 
 These fields are only used when `model_name == ModelType.PATCHCORE` and are ignored for other models.
 
+Add validation in `__post_init__`:
+- `coreset_sampling_ratio` must be between 0 and 1
+- `num_neighbors` must be a positive integer
+
 ## train_anomaly_model() Changes
 
-Update the model instantiation logic to pass PatchCore-specific parameters when `model_name == ModelType.PATCHCORE`:
+Two changes required:
+
+**1. Add PatchCore to the layers conditional.** The current code only passes `layers` for `[ModelType.PADIM, ModelType.STFPM]`. Update to include PatchCore:
+
+```python
+if config.model_name in [ModelType.PADIM, ModelType.STFPM, ModelType.PATCHCORE]:
+    model_config["layers"] = config.layers
+```
+
+**2. Add PatchCore model instantiation** with its specific parameters:
 
 ```python
 if model_name == ModelType.PATCHCORE:
@@ -96,6 +109,13 @@ if model_name == ModelType.PATCHCORE:
         num_neighbors=config.num_neighbors,
     )
 ```
+
+## nbdev Cell Types
+
+Changes fall into two categories:
+
+- **`#| export` cells** (generate .py source): `get_model_configs()`, `FlexibleTrainingConfig` fields, `train_anomaly_model()` PatchCore branch, validation
+- **Demo cells** (no export, notebook-only): All loop-over-configs usage in training/inference demos in notebooks 06-15. These do NOT affect generated source code.
 
 ## Inference System
 
@@ -116,5 +136,6 @@ Verify by running notebooks end-to-end:
 
 ## Risks
 
-- PatchCore with `wide_resnet50_2` uses more memory than PaDiM with `resnet18` — users on limited GPU may need to reduce image size or switch backbone
+- PatchCore with `wide_resnet50_2` uses ~4-6 GB GPU memory vs PaDiM with resnet18 at ~1-2 GB — users on limited GPU may need to reduce image size or switch backbone
 - Coreset sampling adds training time compared to PaDiM
+- Both models run sequentially in the loop — ensure sufficient memory cleanup between runs
