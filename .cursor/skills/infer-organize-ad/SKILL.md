@@ -5,7 +5,7 @@ description: Score images with unified inference, then sort into anomaly-score t
 
 # Infer and organize by anomaly score
 
-`vad-infer-organize` wraps `unified_inference_with_threshold_posters` with Hydra config defaults in `tutorials/end2end_tutorial/conf/infer_organize.yaml`. Combines batch scoring with threshold-folder triage and optional posters — no separate image list file required.
+`vad-infer-organize` wraps `unified_inference_with_threshold_posters` with Hydra config defaults in `be_vision_ad_tools/tutorials/conf/infer_organize.yaml`. Combines batch scoring with threshold-folder triage and optional posters — no separate image list file required.
 
 ## Public API (use only these)
 

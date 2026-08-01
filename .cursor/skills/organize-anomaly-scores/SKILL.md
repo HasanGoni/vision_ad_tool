@@ -5,7 +5,7 @@ description: Score a batch of images, sort them into anomaly-score folders, and 
 
 # Organize images by anomaly score
 
-`vad-organize` wraps `predict_and_organize_by_score` with Hydra config defaults in `tutorials/end2end_tutorial/conf/organize.yaml`. Workflow: predict → bucket by threshold → metadata JSON → optional posters.
+`vad-organize` wraps `predict_and_organize_by_score` with Hydra config defaults in `be_vision_ad_tools/tutorials/conf/organize.yaml`. Workflow: predict → bucket by threshold → metadata JSON → optional posters.
 
 ## Public API (use only these)
 

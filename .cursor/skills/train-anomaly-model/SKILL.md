@@ -5,7 +5,7 @@ description: Train an Anomalib-based anomaly detection model using be_vision_ad_
 
 # Train an anomaly detection model
 
-`vad-train` wraps `be_vision_ad_tools.training.flexible_trainer.train_anomaly_model` with Hydra config defaults in `tutorials/end2end_tutorial/conf/train.yaml`.
+`vad-train` wraps `be_vision_ad_tools.training.flexible_trainer.train_anomaly_model` with Hydra config defaults in `be_vision_ad_tools/tutorials/conf/train.yaml`.
 
 ## Public API (use only these)
 
@@ -53,7 +53,7 @@ bash .cursor/skills/train-anomaly-model/scripts/train_model.sh /path/to/data pat
 
 ## Config overrides
 
-Any field in `tutorials/end2end_tutorial/conf/train.yaml` can be overridden on the CLI:
+Any field in `be_vision_ad_tools/tutorials/conf/train.yaml` can be overridden on the CLI:
 
 ```bash
 vad-train data_root=/data/my_product max_epochs=50 backbone=wide_resnet50_2

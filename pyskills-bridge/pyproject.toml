@@ -17,6 +17,7 @@ dependencies = ["pyskills"]
 "infer_organize_ad.skill" = "infer_organize_ad.skill"
 "train_infer_ad.skill" = "train_infer_ad.skill"
 "full_ad.skill" = "full_ad.skill"
+"hyperparameter_search_ad.skill" = "hyperparameter_search_ad.skill"
 
 [tool.setuptools.packages.find]
-include = ["verify_ad*", "train_ad*", "infer_ad*", "organize_ad*", "infer_organize_ad*", "train_infer_ad*", "full_ad*"]
+include = ["verify_ad*", "train_ad*", "infer_ad*", "organize_ad*", "infer_organize_ad*", "train_infer_ad*", "full_ad*", "hyperparameter_search_ad*"]

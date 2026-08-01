@@ -5,7 +5,7 @@ description: Score images for anomalies using a trained be_vision_ad_tools model
 
 # Run AD inference
 
-`vad-infer` wraps `be_vision_ad_tools.inference.unified_inference` with Hydra config defaults in `tutorials/end2end_tutorial/conf/infer.yaml`. Auto-detects Jupyter vs HPC vs local parallel execution.
+`vad-infer` wraps `be_vision_ad_tools.inference.unified_inference` with Hydra config defaults in `be_vision_ad_tools/tutorials/conf/infer.yaml`. Auto-detects Jupyter vs HPC vs local parallel execution.
 
 ## Public API (use only these)
 

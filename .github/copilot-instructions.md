@@ -25,7 +25,7 @@ Verified AD toolbox:
 
 ### Hydra CLIs (primary)
 
-Install with `uv sync` or `pip install -e .`. Configs: `tutorials/end2end_tutorial/conf/*.yaml`.
+Install with `uv sync` or `pip install -e .`. Configs: `be_vision_ad_tools/tutorials/conf/*.yaml`.
 
 | CLI | Workflow | Example |
 |-----|----------|---------|
@@ -35,6 +35,7 @@ Install with `uv sync` or `pip install -e .`. Configs: `tutorials/end2end_tutori
 | `vad-infer-organize` | Infer + score buckets + posters | `vad-infer-organize model_path=/path/model.ckpt test_folders=/path/images` |
 | `vad-train-infer` | Train + validation posters | `vad-train-infer train.data_root=/path/data infer_after_training.validation_images=/path/val` |
 | `vad-full` | Train + infer-organize pipeline | `vad-full train.data_root=/path/data infer_organize.test_folders=/path/test` |
+| `vad-hyperparam-search` | Grid search + comparison poster | `vad-hyperparam-search data_root=/path/data test_images=/path/test` |
 
 ### Skill scripts (wrappers around vad-*)
 
@@ -47,6 +48,7 @@ Install with `uv sync` or `pip install -e .`. Configs: `tutorials/end2end_tutori
 | Infer + organize | `.cursor/skills/infer-organize-ad/scripts/infer_organize.sh <model> <folder> [out]` |
 | Train + infer | `.cursor/skills/train-infer-ad/scripts/train_infer.sh <data_root> <val_images> [model]` |
 | Full pipeline | `.cursor/skills/full-ad-pipeline/scripts/full_pipeline.sh <data_root> <test> [model]` |
+| Hyperparam search | `.cursor/skills/hyperparameter-search-ad/scripts/hyperparam_search.sh <data_root> <test> [class]` |
 
 Do not invent other commands. Do not bypass these with ad-hoc one-liners.
 

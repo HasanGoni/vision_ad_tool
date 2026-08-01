@@ -35,7 +35,8 @@ Open this repo in Cursor. Skills live at:
 ├── organize-anomaly-scores/ # vad-organize — triage by score (image list)
 ├── infer-organize-ad/       # vad-infer-organize — infer + score buckets + posters
 ├── train-infer-ad/          # vad-train-infer — train + validation posters
-└── full-ad-pipeline/        # vad-full — train + infer-organize end-to-end
+├── full-ad-pipeline/        # vad-full — train + infer-organize end-to-end
+└── hyperparameter-search-ad/ # vad-hyperparam-search — grid search + poster
 ```
 
 | Skill | Hydra CLI | Primary trigger |
@@ -47,6 +48,7 @@ Open this repo in Cursor. Skills live at:
 | `infer-organize-ad` | `vad-infer-organize` | Score folder + bucket + posters |
 | `train-infer-ad` | `vad-train-infer` | Train + validation posters in one step |
 | `full-ad-pipeline` | `vad-full` | End-to-end train + test triage |
+| `hyperparameter-search-ad` | `vad-hyperparam-search` | Grid search + comparison poster |
 
 Each folder has `SKILL.md` + `scripts/`. Cursor matches skills from the YAML `description:` when your task fits.
 
@@ -89,7 +91,7 @@ BOUND       → do not invent other commands
 
 ## End-to-end Hydra CLIs
 
-`tutorials/end2end_tutorial/` exposes the main workflows as **Hydra-configured CLIs** (registered in `pyproject.toml` `[project.scripts]`).
+Hydra CLIs are **nbdev-exported** from `nbs/18_tutorials.end2end_hydra_cli.ipynb` and `nbs/19_training.hyperparameter_hydra_cli.ipynb` into `be_vision_ad_tools/tutorials/` and `be_vision_ad_tools/training/`. Configs are packaged at `be_vision_ad_tools/tutorials/conf/*.yaml`.
 
 | Command | Workflow |
 |---------|----------|
@@ -99,17 +101,19 @@ BOUND       → do not invent other commands
 | `vad-infer-organize` | `unified_inference_with_threshold_posters` |
 | `vad-train-infer` | train + `run_inference_after_training` |
 | `vad-full` | train + infer-organize pipeline |
+| `vad-hyperparam-search` | `diff_parameter_and_save_poster` |
 
 ```bash
 uv sync
 vad-train data_root=/path/to/data model_name=patchcore
 vad-infer model_path=/path/model.ckpt test_folders=/path/images
 vad-full train.data_root=/path/data infer_organize.test_folders=/path/test
+vad-hyperparam-search data_root=/path/data test_images=/path/test
 ```
 
-Configs: `tutorials/end2end_tutorial/conf/*.yaml` — override any field on the CLI.
+Configs: `be_vision_ad_tools/tutorials/conf/*.yaml` — override any field on the CLI.
 
-Details: [tutorials/end2end_tutorial/README.md](tutorials/end2end_tutorial/README.md)
+Legacy shim: `tutorials/end2end_tutorial/` re-exports from `be_vision_ad_tools.tutorials.end2end_cli`.
 
 ### nbdev3 + pyproject.toml
 

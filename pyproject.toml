@@ -54,12 +54,13 @@ Repository = "https://github.com/HasanGoni/vision_ad_tool"
 Documentation = "https://HasanGoni.github.io/vision_ad_tool/"
 
 [project.scripts]
-vad-train = "tutorials.end2end_tutorial.cli:train_cli"
-vad-infer = "tutorials.end2end_tutorial.cli:infer_cli"
-vad-organize = "tutorials.end2end_tutorial.cli:organize_cli"
-vad-infer-organize = "tutorials.end2end_tutorial.cli:infer_organize_cli"
-vad-train-infer = "tutorials.end2end_tutorial.cli:train_infer_cli"
-vad-full = "tutorials.end2end_tutorial.cli:full_cli"
+vad-train = "be_vision_ad_tools.tutorials.end2end_cli:train_cli"
+vad-infer = "be_vision_ad_tools.tutorials.end2end_cli:infer_cli"
+vad-organize = "be_vision_ad_tools.tutorials.end2end_cli:organize_cli"
+vad-infer-organize = "be_vision_ad_tools.tutorials.end2end_cli:infer_organize_cli"
+vad-train-infer = "be_vision_ad_tools.tutorials.end2end_cli:train_infer_cli"
+vad-full = "be_vision_ad_tools.tutorials.end2end_cli:full_cli"
+vad-hyperparam-search = "be_vision_ad_tools.training.hyperparameter_hydra_cli:hyperparam_search_cli"
 
 [project.entry-points.nbdev]
 vision_ad_tool = "be_vision_ad_tools._modidx:d"
@@ -68,7 +69,7 @@ vision_ad_tool = "be_vision_ad_tools._modidx:d"
 include = ["be_vision_ad_tools*", "tutorials*"]
 
 [tool.setuptools.package-data]
-"tutorials.end2end_tutorial" = ["conf/*.yaml"]
+"be_vision_ad_tools.tutorials" = ["conf/*.yaml"]
 
 [tool.nbdev]
 lib_path = "be_vision_ad_tools"

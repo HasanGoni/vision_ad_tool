@@ -8,7 +8,7 @@ from typing import Any
 from omegaconf import OmegaConf
 from pyskills.core import allow
 
-from tutorials.end2end_tutorial.workflow import run_full
+from be_vision_ad_tools.tutorials.end2end_cli import run_full
 
 __all__ = ['full_pipeline']
 

@@ -1,6 +1,6 @@
 # pyskills ↔ Cursor skills for vision_ad_tools
 
-Seven workflows, two media. Use Cursor skills in the IDE; use pyskills modules in Solveit/clikernel.
+Eight workflows, two media. Use Cursor skills in the IDE; use pyskills modules in Solveit/clikernel.
 
 ## Skills map
 
@@ -13,6 +13,7 @@ Seven workflows, two media. Use Cursor skills in the IDE; use pyskills modules i
 | Infer + organize | `infer-organize-ad` | `vad-infer-organize` | `infer_organize_ad.skill` | `infer_organize()` |
 | Train + infer | `train-infer-ad` | `vad-train-infer` | `train_infer_ad.skill` | `train_infer()` |
 | Full pipeline | `full-ad-pipeline` | `vad-full` | `full_ad.skill` | `full_pipeline()` |
+| Hyperparam search | `hyperparameter-search-ad` | `vad-hyperparam-search` | `hyperparameter_search_ad.skill` | `hyperparam_search()` |
 
 ## Concept map (same as computer_use bridge)
 
@@ -40,12 +41,14 @@ import verify_ad.skill as v
 import train_ad.skill as t
 import infer_ad.skill as i
 import organize_ad.skill as o
+import hyperparameter_search_ad.skill as h
 
 print(doc(v))
 v.verify_all()
 t.train('/data/my_product', model_name='patchcore')
 i.infer('/path/model.ckpt', '/path/images')
 o.organize('/path/model.ckpt', 'images.txt', './review')
+h.hyperparam_search('/data/my_product', '/data/test_images')
 ```
 
 ## Preprocessing contract (group policy)
@@ -60,3 +63,5 @@ Shared across all skills:
 ## Repo source
 
 Clone `https://github.com/HasanGoni/vision_ad_tool` into this directory. Package: `be_vision_ad_tools`.
+
+Hydra CLIs are nbdev-exported from `nbs/18_tutorials.end2end_hydra_cli.ipynb` and `nbs/19_training.hyperparameter_hydra_cli.ipynb`. Configs: `be_vision_ad_tools/tutorials/conf/*.yaml`.

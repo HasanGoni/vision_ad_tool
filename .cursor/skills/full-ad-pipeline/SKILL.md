@@ -5,7 +5,7 @@ description: Run the complete anomaly-detection pipeline — train a model, then
 
 # Full AD pipeline (train + infer-organize)
 
-`vad-full` chains training with `unified_inference_with_threshold_posters` using Hydra config defaults in `tutorials/end2end_tutorial/conf/full.yaml`. Trains a model, extracts the exported checkpoint, then scores and organizes test images into threshold buckets with posters.
+`vad-full` chains training with `unified_inference_with_threshold_posters` using Hydra config defaults in `be_vision_ad_tools/tutorials/conf/full.yaml`. Trains a model, extracts the exported checkpoint, then scores and organizes test images into threshold buckets with posters.
 
 ## Public API (use only these)
 

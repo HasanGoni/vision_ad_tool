@@ -5,7 +5,7 @@ description: Train an anomaly detection model, then immediately run inference an
 
 # Train then infer (validation posters)
 
-`vad-train-infer` chains `train_anomaly_model` with `run_inference_after_training` using Hydra config defaults in `tutorials/end2end_tutorial/conf/train_infer.yaml`. Automatically passes the trained checkpoint to inference — no manual `model_path` lookup.
+`vad-train-infer` chains `train_anomaly_model` with `run_inference_after_training` using Hydra config defaults in `be_vision_ad_tools/tutorials/conf/train_infer.yaml`. Automatically passes the trained checkpoint to inference — no manual `model_path` lookup.
 
 ## Public API (use only these)
 

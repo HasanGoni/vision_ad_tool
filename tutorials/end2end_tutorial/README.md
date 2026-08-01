@@ -1,6 +1,10 @@
-# End-to-end tutorial CLIs
+# End-to-end tutorial CLIs (compatibility shim)
 
-Hydra-driven command-line entry points for the main `be_vision_ad_tools` workflows.
+Hydra CLIs are now **nbdev-exported** from `nbs/18_tutorials.end2end_hydra_cli.ipynb` into `be_vision_ad_tools/tutorials/end2end_cli.py`.
+
+Configs are packaged at `be_vision_ad_tools/tutorials/conf/*.yaml`.
+
+This directory keeps thin re-exports for backward compatibility (`tutorials.end2end_tutorial.workflow` / `.cli`).
 
 ## Commands
 
@@ -10,20 +14,14 @@ Hydra-driven command-line entry points for the main `be_vision_ad_tools` workflo
 | `vad-infer` | `conf/infer.yaml` | `unified_inference` |
 | `vad-organize` | `conf/organize.yaml` | `predict_and_organize_by_score` |
 | `vad-infer-organize` | `conf/infer_organize.yaml` | `unified_inference_with_threshold_posters` |
-| `vad-train-infer` | `conf/train_infer.yaml` | `train_anomaly_model` + `run_inference_after_training` |
-| `vad-full` | `conf/full.yaml` | train + `unified_inference_with_threshold_posters` |
-
-Install the package (`uv sync` or `pip install -e .`), then run:
+| `vad-train-infer` | `conf/train_infer.yaml` | train + `run_inference_after_training` |
+| `vad-full` | `conf/full.yaml` | train + infer-organize pipeline |
+| `vad-hyperparam-search` | `conf/hyperparam_search.yaml` | `diff_parameter_and_save_poster` |
 
 ```bash
+uv sync
 vad-train data_root=/path/to/data class_name=my_product
-vad-infer model_path=/path/model.ckpt test_folders=/path/images
-vad-organize model_path=/path/model.ckpt image_list_file=/path/list.txt output_dir=./review
-vad-infer-organize model_path=/path/model.ckpt test_folders=/path/images
-vad-train-infer train.data_root=/path/to/data infer_after_training.validation_images=/path/val
-vad-full train.data_root=/path/to/data infer_organize.test_folders=/path/test
+vad-hyperparam-search data_root=/path/to/data test_images=/path/to/test
 ```
 
-Override any config field on the command line (Hydra syntax). Edit defaults in `conf/*.yaml`.
-
-Configs live in `tutorials/end2end_tutorial/conf/` (bundled with the package).
+Override any config field on the command line (Hydra syntax).
