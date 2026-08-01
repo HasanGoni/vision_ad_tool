@@ -21,16 +21,34 @@ Verified AD toolbox:
 - nbdev_test: passed
 ```
 
-## Public API — use only these scripts
+## Public API — use only these commands
 
-| Workflow | Script |
-|----------|--------|
+### Hydra CLIs (primary)
+
+Install with `uv sync` or `pip install -e .`. Configs: `tutorials/end2end_tutorial/conf/*.yaml`.
+
+| CLI | Workflow | Example |
+|-----|----------|---------|
+| `vad-train` | Train model | `vad-train data_root=/path/to/data model_name=patchcore` |
+| `vad-infer` | Batch score images | `vad-infer model_path=/path/model.ckpt test_folders=/path/images` |
+| `vad-organize` | Triage by score (image list) | `vad-organize model_path=/path/model.ckpt image_list_file=/path/list.txt output_dir=./review` |
+| `vad-infer-organize` | Infer + score buckets + posters | `vad-infer-organize model_path=/path/model.ckpt test_folders=/path/images` |
+| `vad-train-infer` | Train + validation posters | `vad-train-infer train.data_root=/path/data infer_after_training.validation_images=/path/val` |
+| `vad-full` | Train + infer-organize pipeline | `vad-full train.data_root=/path/data infer_organize.test_folders=/path/test` |
+
+### Skill scripts (wrappers around vad-*)
+
+| Skill | Script |
+|-------|--------|
 | Verify | `.cursor/skills/verify-ad-pipeline/scripts/verify_*.sh` |
 | Train | `.cursor/skills/train-anomaly-model/scripts/train_model.sh <data_root> [model]` |
 | Inference | `.cursor/skills/run-ad-inference/scripts/run_inference.sh <model> <folder>` |
-| Score triage | `.cursor/skills/organize-anomaly-scores/scripts/organize_scores.sh <model> <list.txt> <out>` |
+| Score triage (list) | `.cursor/skills/organize-anomaly-scores/scripts/organize_scores.sh <model> <list.txt> <out>` |
+| Infer + organize | `.cursor/skills/infer-organize-ad/scripts/infer_organize.sh <model> <folder> [out]` |
+| Train + infer | `.cursor/skills/train-infer-ad/scripts/train_infer.sh <data_root> <val_images> [model]` |
+| Full pipeline | `.cursor/skills/full-ad-pipeline/scripts/full_pipeline.sh <data_root> <test> [model]` |
 
-Do not invent other commands. Do not bypass these scripts with ad-hoc one-liners.
+Do not invent other commands. Do not bypass these with ad-hoc one-liners.
 
 ## Preprocessing contract (group policy)
 

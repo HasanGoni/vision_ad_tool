@@ -5,17 +5,17 @@ description: Train an Anomalib-based anomaly detection model using be_vision_ad_
 
 # Train an anomaly detection model
 
-`be_vision_ad_tools.training.flexible_trainer` wraps Anomalib v1.x with smart defaults for GPU/HPC environments.
+`vad-train` wraps `be_vision_ad_tools.training.flexible_trainer.train_anomaly_model` with Hydra config defaults in `tutorials/end2end_tutorial/conf/train.yaml`.
 
 ## Public API (use only these)
 
-| Action | Command |
-|--------|---------|
-| Train (CLI) | `bash .cursor/skills/train-anomaly-model/scripts/train_model.sh <data_root> [model] [class_name]` |
-| Train (Python) | see below — `train_anomaly_model(config)` |
+| Step | Command |
+|------|---------|
+| Train (Hydra CLI) | `vad-train data_root=<path> [model_name=patchcore] [class_name=...]` |
+| Train (script) | `bash .cursor/skills/train-anomaly-model/scripts/train_model.sh <data_root> [model_name] [class_name]` |
 | Verify after | use `verify-ad-pipeline` skill |
 
-Do not call raw Anomalib APIs unless the user explicitly asks to bypass the toolbox.
+Do not invent other commands. Do not call raw Anomalib APIs unless the user explicitly asks to bypass the toolbox.
 
 ## Dataset layout
 
@@ -25,7 +25,7 @@ data_root/
 └── bad/         # abnormal images (default abnormal_dir)
 ```
 
-Override dir names via Python config (`normal_dir`, `abnormal_dir`).
+Override dir names via Hydra (`normal_dir=`, `abnormal_dir=`) or edit `conf/train.yaml`.
 
 ## Which model to use
 
@@ -36,7 +36,14 @@ Override dir names via Python config (`normal_dir`, `abnormal_dir`).
 | `fastflow` | Good speed/accuracy tradeoff |
 | `efficientad` | Resource-constrained GPUs |
 
-Only ask the user which model if genuinely ambiguous — default to `patchcore` for production X-ray/AOI, `padim` for smoke tests.
+Default to `patchcore` for production X-ray/AOI, `padim` for smoke tests.
+
+## Running it (Hydra CLI)
+
+```bash
+uv sync   # once, installs vad-train
+vad-train data_root=/path/to/data model_name=patchcore class_name=my_product
+```
 
 ## Running it (script)
 
@@ -44,35 +51,21 @@ Only ask the user which model if genuinely ambiguous — default to `patchcore` 
 bash .cursor/skills/train-anomaly-model/scripts/train_model.sh /path/to/data patchcore my_product
 ```
 
-## Running it (Python)
+## Config overrides
 
-```python
-from be_vision_ad_tools.training.flexible_trainer import FlexibleTrainingConfig, train_anomaly_model
+Any field in `tutorials/end2end_tutorial/conf/train.yaml` can be overridden on the CLI:
 
-config = FlexibleTrainingConfig(
-    data_root="/path/to/data",
-    class_name="my_product",
-    model_name="patchcore",
-    backbone="resnet18",
-    max_epochs=100,
-)
-result = train_anomaly_model(config)
-# result contains model paths, metrics
-```
-
-Or from YAML:
-
-```python
-train_anomaly_model("/path/to/config.yaml")
+```bash
+vad-train data_root=/data/my_product max_epochs=50 backbone=wide_resnet50_2
 ```
 
 ## What "done" looks like (demonstration)
 
-```
+```text
 Trained AD model:
 - data: /data/my_product (good=120, bad=15)
 - model: patchcore / resnet18
-- checkpoint: /data/my_product/results/patchcore/...
+- checkpoint: /data/my_product/models/patchcore/...
 - metrics: image_AUROC=0.97
 - verified: verify-ad-pipeline passed
 ```

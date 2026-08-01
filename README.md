@@ -30,10 +30,23 @@ Open this repo in Cursor. Skills live at:
 ```
 .cursor/skills/
 ├── verify-ad-pipeline/      # run before commit
-├── train-anomaly-model/     # train Padim/Patchcore/etc.
-├── run-ad-inference/        # batch score images
-└── organize-anomaly-scores/ # triage by anomaly score
+├── train-anomaly-model/     # vad-train — train Padim/Patchcore/etc.
+├── run-ad-inference/        # vad-infer — batch score images
+├── organize-anomaly-scores/ # vad-organize — triage by score (image list)
+├── infer-organize-ad/       # vad-infer-organize — infer + score buckets + posters
+├── train-infer-ad/          # vad-train-infer — train + validation posters
+└── full-ad-pipeline/        # vad-full — train + infer-organize end-to-end
 ```
+
+| Skill | Hydra CLI | Primary trigger |
+|-------|-----------|-----------------|
+| `verify-ad-pipeline` | — | After editing `be_vision_ad_tools/` or `nbs/` |
+| `train-anomaly-model` | `vad-train` | Train/fit/build an AD checkpoint |
+| `run-ad-inference` | `vad-infer` | Batch-score images or folders |
+| `organize-anomaly-scores` | `vad-organize` | Triage from an image list file |
+| `infer-organize-ad` | `vad-infer-organize` | Score folder + bucket + posters |
+| `train-infer-ad` | `vad-train-infer` | Train + validation posters in one step |
+| `full-ad-pipeline` | `vad-full` | End-to-end train + test triage |
 
 Each folder has `SKILL.md` + `scripts/`. Cursor matches skills from the YAML `description:` when your task fits.
 

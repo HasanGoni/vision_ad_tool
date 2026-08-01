@@ -291,14 +291,17 @@ Keep procedure in one place. Mirror names across both; don't maintain two diverg
 - **Demonstration:** concrete pytest count + images inspected + annotations valid
 - **pyskills twin:** `pyskills-bridge/verify_synthetic/skill.py` (optional, for Python-kernel agents)
 
-### vision_ad_tool — four skills
+### vision_ad_tool — seven skills
 
-| Skill | Trigger | Key script |
-|-------|---------|------------|
-| `verify-ad-pipeline` | After editing `be_vision_ad_tool/` | `verify_imports.sh`, `verify_nbdev.sh` |
-| `train-anomaly-model` | User wants new AD checkpoint | `train_model.sh` |
-| `run-ad-inference` | Batch-score images | `run_inference.sh` |
-| `organize-anomaly-scores` | Triage by anomaly score | `organize_scores.sh` |
+| Skill | Trigger | Hydra CLI | Key script |
+|-------|---------|-----------|------------|
+| `verify-ad-pipeline` | After editing `be_vision_ad_tools/` | — | `verify_imports.sh`, `verify_nbdev.sh` |
+| `train-anomaly-model` | User wants new AD checkpoint | `vad-train` | `train_model.sh` |
+| `run-ad-inference` | Batch-score images | `vad-infer` | `run_inference.sh` |
+| `organize-anomaly-scores` | Triage by anomaly score (image list) | `vad-organize` | `organize_scores.sh` |
+| `infer-organize-ad` | Infer + score buckets + posters | `vad-infer-organize` | `infer_organize.sh` |
+| `train-infer-ad` | Train + validation posters | `vad-train-infer` | `train_infer.sh` |
+| `full-ad-pipeline` | End-to-end train + test triage | `vad-full` | `full_pipeline.sh` |
 
 ---
 

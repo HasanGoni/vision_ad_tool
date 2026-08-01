@@ -1,15 +1,18 @@
 # pyskills ↔ Cursor skills for vision_ad_tools
 
-Four workflows, two media. Use Cursor skills in the IDE; use pyskills modules in Solveit/clikernel.
+Seven workflows, two media. Use Cursor skills in the IDE; use pyskills modules in Solveit/clikernel.
 
 ## Skills map
 
-| Workflow | Cursor skill | pyskills module | Main function |
-|----------|--------------|-----------------|---------------|
-| Verify before commit | `verify-ad-pipeline` | `verify_ad.skill` | `verify_all()` |
-| Train model | `train-anomaly-model` | `train_ad.skill` | `train()` |
-| Batch inference | `run-ad-inference` | `infer_ad.skill` | `infer()` |
-| Score triage | `organize-anomaly-scores` | `organize_ad.skill` | `organize()` |
+| Workflow | Cursor skill | Hydra CLI | pyskills module | Main function |
+|----------|--------------|-----------|-----------------|---------------|
+| Verify before commit | `verify-ad-pipeline` | — | `verify_ad.skill` | `verify_all()` |
+| Train model | `train-anomaly-model` | `vad-train` | `train_ad.skill` | `train()` |
+| Batch inference | `run-ad-inference` | `vad-infer` | `infer_ad.skill` | `infer()` |
+| Score triage | `organize-anomaly-scores` | `vad-organize` | `organize_ad.skill` | `organize()` |
+| Infer + organize | `infer-organize-ad` | `vad-infer-organize` | `infer_organize_ad.skill` | `infer_organize()` |
+| Train + infer | `train-infer-ad` | `vad-train-infer` | `train_infer_ad.skill` | `train_infer()` |
+| Full pipeline | `full-ad-pipeline` | `vad-full` | `full_ad.skill` | `full_pipeline()` |
 
 ## Concept map (same as computer_use bridge)
 
