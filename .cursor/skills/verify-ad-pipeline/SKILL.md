@@ -43,7 +43,7 @@ Uses `uv sync` if available, else `pip install -e .`. Run this after any `pyproj
 bash .cursor/skills/verify-ad-pipeline/scripts/verify_imports.sh
 ```
 
-Confirms the three main entry surfaces import without error. No GPU training here — if this fails, fix imports before running anything heavier.
+Confirms the three main entry surfaces import without error and that `vad-train-submit --help` resolves (HPC submit CLI smoke). No GPU training here — if this fails, fix imports before running anything heavier.
 
 ## 3. nbdev CI
 
@@ -58,7 +58,7 @@ Same as `.github/workflows/test.yaml` (fastai/nbdev-ci). If you edited notebooks
 After each script, confirm pass criteria in the output — don't rely on exit code alone:
 
 - `verify_sync.sh` — sync completed without errors (`uv sync` or `pip install -e .` OK)
-- `verify_imports.sh` — all three entry surfaces imported (`flexible_trainer`, `unified_inference`, `anomaly_score_organizer`)
+- `verify_imports.sh` — all three entry surfaces imported (`flexible_trainer`, `unified_inference`, `anomaly_score_organizer`) and `vad-train-submit --help` OK
 - `verify_nbdev.sh` — `nbdev-test` reports passed (note the test count in the log)
 
 ## Preprocessing contract (group policy)
