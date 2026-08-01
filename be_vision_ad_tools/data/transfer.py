@@ -7,29 +7,29 @@ Docs: https://HasanGoni.github.io/vision_ad_tool/data.transfer.html.md"""
 # %% auto #0
 __all__ = ['CURRETNT_NB']
 
-# %% ../../nbs/01_data.transfer.ipynb #cbed6951
+# %% ../../nbs/01_data.transfer.ipynb #6dfd961e
 import sys
 from pathlib import Path
 
 
-# %% ../../nbs/01_data.transfer.ipynb #8155d9a3
+# %% ../../nbs/01_data.transfer.ipynb #397a38cc
 #CV_TOOLS = Path(r'/home/ai_dsx.work/data/projects/cv_tools')
 #sys.path.append(str(CV_TOOLS))
 
 
-# %% ../../nbs/01_data.transfer.ipynb #be3a1894
+# %% ../../nbs/01_data.transfer.ipynb #c67b0246
 #custom_lib_path = Path(r'/home/ai_warstein/homes/goni/custom_libs')
 #sys.path.append(str(custom_lib_path))
 
 
-# %% ../../nbs/01_data.transfer.ipynb #c2fc7108
+# %% ../../nbs/01_data.transfer.ipynb #bf41056c
 #from cv_tools.imports import *
 #from cv_tools.core import *
 from dotenv import load_dotenv
 
 
-# %% ../../nbs/01_data.transfer.ipynb #410631ca
+# %% ../../nbs/01_data.transfer.ipynb #7580ee38
 #load_dotenv(dotenv_path=f'/home/ai_sintercra/Users/goni/workspace/projects/git_data/be-vision-ad-tools/be-vision-ad-tools/.env')
 
-# %% ../../nbs/01_data.transfer.ipynb #04f7bc09
+# %% ../../nbs/01_data.transfer.ipynb #0acfb47b
 CURRETNT_NB='/home/ai_sintercra/Users/goni/workspace/projects/git_data/be-vision-ad-tools/nbs'

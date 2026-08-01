@@ -12,7 +12,7 @@ __all__ = ['test_multinode_imports', 'get_image_extensions', 'is_image_file', 'g
            'create_single_inference_job', 'create_multinode_inference_jobs', 'handle_nested_folders',
            'validate_inference_inputs', 'print_execution_summary', 'distribute_folder_inference']
 
-# %% ../../nbs/12_inference.multinode_inference.ipynb #20a338b5
+# %% ../../nbs/12_inference.multinode_inference.ipynb #7282320f
 from pathlib import Path
 from typing import (
     Union, List, Dict, Any,
@@ -26,10 +26,10 @@ import json
 import numpy as np
 import cloudpickle
 
-# %% ../../nbs/12_inference.multinode_inference.ipynb #bd2bf875
+# %% ../../nbs/12_inference.multinode_inference.ipynb #81f6c2ba
 from .multinode_from_aiop_tool import *
 
-# %% ../../nbs/12_inference.multinode_inference.ipynb #71e5e7b7
+# %% ../../nbs/12_inference.multinode_inference.ipynb #58b5f556
 from be_vision_ad_tools.inference.multinode_from_aiop_tool import (
     HPC_Job,
     DistributeHPC,
@@ -39,7 +39,7 @@ from be_vision_ad_tools.inference.prediction_system import (
 )
 
 
-# %% ../../nbs/12_inference.multinode_inference.ipynb #7b9f705d
+# %% ../../nbs/12_inference.multinode_inference.ipynb #113d4771
 def test_multinode_imports() -> Dict[str, bool]:
     """Test that all required imports from notebooks 10 and 11 work correctly."""
     results = {}
@@ -93,7 +93,7 @@ def test_multinode_imports() -> Dict[str, bool]:
     return results
 
 
-# %% ../../nbs/12_inference.multinode_inference.ipynb #29742463
+# %% ../../nbs/12_inference.multinode_inference.ipynb #eb2a0388
 def get_image_extensions() -> Set[str]:
     """Get set of supported image file extensions."""
     return {'.jpg', '.jpeg', '.png', '.bmp', '.tiff', '.tif'}
@@ -104,13 +104,13 @@ def is_image_file(path: Path) -> bool:
     return path.is_file() and path.suffix.lower() in get_image_extensions()
 
 
-# %% ../../nbs/12_inference.multinode_inference.ipynb #497dd340
+# %% ../../nbs/12_inference.multinode_inference.ipynb #dd901981
 def get_subdirectories(root: Path) -> List[Path]:
     """Get list of subdirectories in root path."""
     return [p for p in root.iterdir() if p.is_dir()]
 
 
-# %% ../../nbs/12_inference.multinode_inference.ipynb #c3ce2ef8
+# %% ../../nbs/12_inference.multinode_inference.ipynb #be0b0b38
 def scan_nested_structure(
     root: Path,  # Root folder to scan
 ) -> Dict[str, Any]:  # Returns folder structure
@@ -142,7 +142,7 @@ def scan_nested_structure(
 
 
 
-# %% ../../nbs/12_inference.multinode_inference.ipynb #b6a2d203
+# %% ../../nbs/12_inference.multinode_inference.ipynb #8e958800
 def scan_flat_structure(
     root: Path,  # Root folder to scan
 ) -> Dict[str, Any]:  # Returns folder structure
@@ -166,7 +166,7 @@ def scan_flat_structure(
     return structure
 
 
-# %% ../../nbs/12_inference.multinode_inference.ipynb #aeef3749
+# %% ../../nbs/12_inference.multinode_inference.ipynb #46b5f5fa
 def scan_folder_structure(
     root_path: Union[str, Path]  # Root path to scan
 ) -> Dict[str, Any]:  # Returns folder structure
@@ -188,7 +188,7 @@ def scan_folder_structure(
     return structure
 
 
-# %% ../../nbs/12_inference.multinode_inference.ipynb #83cd9952
+# %% ../../nbs/12_inference.multinode_inference.ipynb #af190a2f
 def _create_batches_from_flat_structure(
     folder_info: Dict[str, Any],  # Folder structure information
     batch_size: int  # Maximum images per batch
@@ -206,7 +206,7 @@ def _create_batches_from_flat_structure(
     return batches
 
 
-# %% ../../nbs/12_inference.multinode_inference.ipynb #ec6542f0
+# %% ../../nbs/12_inference.multinode_inference.ipynb #cd876703
 def _split_large_lot(
     lot_images: List[Path],  # Images in the lot
     batch_size: int,  # Maximum images per batch
@@ -224,7 +224,7 @@ def _split_large_lot(
 
 
 
-# %% ../../nbs/12_inference.multinode_inference.ipynb #6d2ea225
+# %% ../../nbs/12_inference.multinode_inference.ipynb #1712be9a
 def _add_lot_to_batch(
     current_batch: List[Path],  # Current batch being built
     lot_images: List[Path],  # Images to add
@@ -237,7 +237,7 @@ def _add_lot_to_batch(
     return False
 
 
-# %% ../../nbs/12_inference.multinode_inference.ipynb #b9d519e7
+# %% ../../nbs/12_inference.multinode_inference.ipynb #13dfb3c4
 def _create_batches_from_nested_structure(
     folder_info: Dict[str, Any],  # Folder structure information
     batch_size: int  # Maximum images per batch
@@ -275,7 +275,7 @@ def _create_batches_from_nested_structure(
 
     return batches
 
-# %% ../../nbs/12_inference.multinode_inference.ipynb #c29bd404
+# %% ../../nbs/12_inference.multinode_inference.ipynb #d5fe1ae5
 def create_smart_batches(
     folder_info: Dict[str, Any],  # Folder structure from scan_folder_structure
     batch_size: int  # Maximum images per batch
@@ -292,7 +292,7 @@ def create_smart_batches(
     return batches
 
 
-# %% ../../nbs/12_inference.multinode_inference.ipynb #9926fcb3
+# %% ../../nbs/12_inference.multinode_inference.ipynb #4bf75d69
 def create_batch_id(
     batch_index: int#batch index
     ) -> str:
@@ -300,7 +300,7 @@ def create_batch_id(
     return f"batch_{batch_index+1:04d}"
 
 
-# %% ../../nbs/12_inference.multinode_inference.ipynb #22fc160a
+# %% ../../nbs/12_inference.multinode_inference.ipynb #3665aaf7
 def create_batch_list_file_path(
     output_dir: Path,  # output directory
     batch_id: str  # batch id
@@ -310,7 +310,7 @@ def create_batch_list_file_path(
     return output_dir / "batch_lists" / f"{batch_id}_images.txt"
 
 
-# %% ../../nbs/12_inference.multinode_inference.ipynb #295d3cfd
+# %% ../../nbs/12_inference.multinode_inference.ipynb #c031c465
 def setup_output_directory(
     output_dir: Path  # output directory
 
@@ -321,7 +321,7 @@ def setup_output_directory(
     return output_path
 
 
-# %% ../../nbs/12_inference.multinode_inference.ipynb #6d4ababf
+# %% ../../nbs/12_inference.multinode_inference.ipynb #2d40678d
 def create_batch_list_file(
     batch: List[Path], # list of image paths
     batch_list_file: Path # path to save batch list file
@@ -332,7 +332,7 @@ def create_batch_list_file(
         for img_path in batch:
             f.write(f"{img_path}\n")
 
-# %% ../../nbs/12_inference.multinode_inference.ipynb #a4991786
+# %% ../../nbs/12_inference.multinode_inference.ipynb #7f8ae0fe
 def _serialize_preprocessing_fn(preprocessing_fn: Callable) -> str:
     """Serialize preprocessing function to importable module path."""
     if preprocessing_fn is None:
@@ -359,7 +359,7 @@ def _serialize_preprocessing_fn(preprocessing_fn: Callable) -> str:
     # Otherwise, return as importable module path
     return ("import", f"{module_name}.{function_name}")
 
-# %% ../../nbs/12_inference.multinode_inference.ipynb #04ba3e92
+# %% ../../nbs/12_inference.multinode_inference.ipynb #82975c4e
 def create_inference_command_from_file(
     model_path: Path,# Path to trained model
     batch_list_file: Path, # Path to batch list file
@@ -490,7 +490,7 @@ def create_inference_command_from_file(
     # Return proper command list format for HPC execution
     return ["python", "-c", python_code]
 
-# %% ../../nbs/12_inference.multinode_inference.ipynb #b2fddc27
+# %% ../../nbs/12_inference.multinode_inference.ipynb #6071e5d1
 def create_inference_command_from_filev03(
     model_path: Path,# Path to trained model
     batch_list_file: Path, # Path to batch list file
@@ -578,7 +578,7 @@ def create_inference_command_from_filev03(
     # Return proper command list format for HPC execution
     return ["python", "-c", python_code]
 
-# %% ../../nbs/12_inference.multinode_inference.ipynb #2cc9ca3d
+# %% ../../nbs/12_inference.multinode_inference.ipynb #058c2a07
 def create_hpc_job_object(
     command: List[str],  # Inference command list ["python", "-c", "code"]
     cores: int,  # Number of cores for job
@@ -591,7 +591,7 @@ def create_hpc_job_object(
     return job
 
 
-# %% ../../nbs/12_inference.multinode_inference.ipynb #01359dfe
+# %% ../../nbs/12_inference.multinode_inference.ipynb #1c1b4a71
 def create_single_inference_job(
     batch: List[Path],  # List of image paths in batch
     batch_index: int,  # Index of batch
@@ -636,7 +636,7 @@ def create_single_inference_job(
 
 
 
-# %% ../../nbs/12_inference.multinode_inference.ipynb #aeebfddc
+# %% ../../nbs/12_inference.multinode_inference.ipynb #7ce7adc6
 def create_multinode_inference_jobs(
     model_path: Path,  # Path to trained model
     batches: List[List[Path]],  # List of image batches
@@ -684,7 +684,7 @@ def create_multinode_inference_jobs(
     return jobs
 
 
-# %% ../../nbs/12_inference.multinode_inference.ipynb #fc679654
+# %% ../../nbs/12_inference.multinode_inference.ipynb #1cd6d70f
 def handle_nested_folders(
     root_path: Path,  # Root folder to process
     batch_size: int = 100  # Maximum images per batch
@@ -710,7 +710,7 @@ def handle_nested_folders(
     return batches
 
 
-# %% ../../nbs/12_inference.multinode_inference.ipynb #73e56dd3
+# %% ../../nbs/12_inference.multinode_inference.ipynb #5509caf5
 def validate_inference_inputs(
     model_path: Union[str, Path],  # Path to trained model
     root_path: Union[str, Path],  # Root folder containing images
@@ -746,7 +746,7 @@ def validate_inference_inputs(
     return model_path, root_path
 
 
-# %% ../../nbs/12_inference.multinode_inference.ipynb #2f618bad
+# %% ../../nbs/12_inference.multinode_inference.ipynb #b9bbe6b7
 def print_execution_summary(
     folder_info: Dict[str, Any],  # Folder structure info from scan
     batches: List[List[Path]],  # Created batches
@@ -793,7 +793,7 @@ def print_execution_summary(
     print("="*70 + "\n")
 
 
-# %% ../../nbs/12_inference.multinode_inference.ipynb #329c7d49
+# %% ../../nbs/12_inference.multinode_inference.ipynb #8d1028e3
 def distribute_folder_inference(
     root_path: Union[str, Path],  # Root folder with images (flat or nested structure)
     model_path: Union[str, Path],  # Path to trained anomaly detection model

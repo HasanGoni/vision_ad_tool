@@ -8,7 +8,7 @@ Docs: https://HasanGoni.github.io/vision_ad_tool/inference.unified_inference.htm
 __all__ = ['resolve_test_folders_smart', 'in_jupyter_notebook', 'has_bsub_command', 'detect_execution_environment',
            'run_jupyter_inference', 'run_parallel_inference', 'unified_inference']
 
-# %% ../../nbs/13_inference.unified_inference.ipynb #40ffd4f5
+# %% ../../nbs/13_inference.unified_inference.ipynb #f48965fa
 import os
 import sys
 import shutil
@@ -26,7 +26,7 @@ from fastcore.all import *
 from fastcore.test import *
 
 
-# %% ../../nbs/13_inference.unified_inference.ipynb #ee4b3a80
+# %% ../../nbs/13_inference.unified_inference.ipynb #d424337f
 # Import from existing notebooks
 from be_vision_ad_tools.inference.prediction_system import (
     predict_image_list_from_file_enhanced
@@ -41,7 +41,7 @@ from be_vision_ad_tools.inference.multinode_from_aiop_tool import (
 )
 
 
-# %% ../../nbs/13_inference.unified_inference.ipynb #03c9f5af
+# %% ../../nbs/13_inference.unified_inference.ipynb #9a3e77a2
 def resolve_test_folders_smart(
     test_folders: Union[str, Path, List[Union[str, Path]]]  # Folder(s), file(s), or mixed
 ) -> List[Path]:  # Returns list of image paths
@@ -84,7 +84,7 @@ def resolve_test_folders_smart(
     return unique_paths
 
 
-# %% ../../nbs/13_inference.unified_inference.ipynb #db689012
+# %% ../../nbs/13_inference.unified_inference.ipynb #36749a92
 def in_jupyter_notebook() -> bool:
     """Check if code is running in a Jupyter notebook."""
     try:
@@ -100,13 +100,13 @@ def in_jupyter_notebook() -> bool:
         return False  # Probably standard Python interpreter
 
 
-# %% ../../nbs/13_inference.unified_inference.ipynb #58e829cd
+# %% ../../nbs/13_inference.unified_inference.ipynb #7fb22b39
 def has_bsub_command() -> bool:
     """Check if bsub command is available (HPC environment)."""
     return shutil.which("bsub") is not None
 
 
-# %% ../../nbs/13_inference.unified_inference.ipynb #53d85951
+# %% ../../nbs/13_inference.unified_inference.ipynb #b8db705a
 def detect_execution_environment() -> str:
     """Detect execution environment and return appropriate mode."""
     if in_jupyter_notebook():
@@ -117,7 +117,7 @@ def detect_execution_environment() -> str:
         return "parallel"
 
 
-# %% ../../nbs/13_inference.unified_inference.ipynb #f6d6cd88
+# %% ../../nbs/13_inference.unified_inference.ipynb #c95eb5d4
 def run_jupyter_inference(
     model_path: Union[str, Path], # Path to the model file
     image_path: Union[str, Path, List[Path]], # List of image paths to process
@@ -170,7 +170,7 @@ def run_jupyter_inference(
     }
 
 
-# %% ../../nbs/13_inference.unified_inference.ipynb #c17bb000
+# %% ../../nbs/13_inference.unified_inference.ipynb #f460bc20
 def _process_batch_worker(args: tuple) -> Dict[str, Any]:
     """Worker function for parallel batch processing."""
     model_path, batch_images, batch_id, output_dir, save_heatmaps, heatmap_style, compress, jpeg_quality, preprocessing_fn, preprocessing_kwargs, kwargs = args
@@ -201,7 +201,7 @@ def _process_batch_worker(args: tuple) -> Dict[str, Any]:
     }
 
 
-# %% ../../nbs/13_inference.unified_inference.ipynb #ed79117d
+# %% ../../nbs/13_inference.unified_inference.ipynb #55a1a50b
 def run_parallel_inference(
     model_path: Union[str, Path],
     image_path: Union[str, Path, List[Path]],
@@ -293,7 +293,7 @@ def run_parallel_inference(
     }
 
 
-# %% ../../nbs/13_inference.unified_inference.ipynb #efe339ff
+# %% ../../nbs/13_inference.unified_inference.ipynb #bef60f4e
 def unified_inference(
     model_path: Union[str, Path],
     test_folders: Union[str, Path, List[Union[str, Path]]],

@@ -7,5 +7,5 @@ Docs: https://HasanGoni.github.io/vision_ad_tool/core.html.md"""
 # %% auto #0
 __all__ = ['foo']
 
-# %% ../nbs/00_core.ipynb #d73d35cd
+# %% ../nbs/00_core.ipynb #a703135b
 def foo(): pass

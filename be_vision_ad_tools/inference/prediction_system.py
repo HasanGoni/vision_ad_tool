@@ -13,7 +13,7 @@ __all__ = ['logger', 'read_image_cv_', 'calculate_heatmap_summary', 'show_predic
            'create_inference_poster_', 'train_model_and_create_posters', 'save_heatmap_visualization', 'batch_predict',
            'split_image_list', 'generate_hpc_commands', 'predict_image_list_from_file', 'merge_batch_results']
 
-# %% ../../nbs/06_inference.prediction_system.ipynb #796e0781
+# %% ../../nbs/06_inference.prediction_system.ipynb #6fcf8456
 import os
 import sys
 from pathlib import Path
@@ -41,7 +41,7 @@ import random
 from datetime import datetime
 import inspect
 
-# %% ../../nbs/06_inference.prediction_system.ipynb #1bb28bbe
+# %% ../../nbs/06_inference.prediction_system.ipynb #fa7e02a5
 # Anomalib imports
 import anomalib
 from anomalib import TaskType
@@ -55,13 +55,13 @@ from anomalib.utils.visualization.image import ImageVisualizer, VisualizationMod
 from anomalib.data.utils import read_image
 
 
-# %% ../../nbs/06_inference.prediction_system.ipynb #294f912f
+# %% ../../nbs/06_inference.prediction_system.ipynb #c8b8b9b9
 # Import our training config
 # Import specific classes to avoid circular import
 from ..training.flexible_trainer import ModelType, FlexibleTrainingConfig
 
 
-# %% ../../nbs/06_inference.prediction_system.ipynb #592dfb09
+# %% ../../nbs/06_inference.prediction_system.ipynb #4cecf768
 # Configure logging according to cursor rules
 import logging
 from typing import Any
@@ -84,7 +84,7 @@ if not logger.handlers:
     logger.addHandler(console_handler)
 
 
-# %% ../../nbs/06_inference.prediction_system.ipynb #71226555
+# %% ../../nbs/06_inference.prediction_system.ipynb #aa8a2238
 def _validate_inputs(
     model_path: Path, # Path of the model file
     image_path: Path # Path of the image file or image directory
@@ -95,14 +95,14 @@ def _validate_inputs(
     if not image_path.exists():
         raise FileNotFoundError(f"Image not found: {image_path}")
 
-# %% ../../nbs/06_inference.prediction_system.ipynb #ba2f3222
+# %% ../../nbs/06_inference.prediction_system.ipynb #7d65d252
 def _detect_device(device: str) -> str:
     """Auto-detect computing device for inference."""
     if device == "auto":
         return "cuda" if torch.cuda.is_available() else "cpu"
     return device
 
-# %% ../../nbs/06_inference.prediction_system.ipynb #e7b904f6
+# %% ../../nbs/06_inference.prediction_system.ipynb #e0dee46d
 def _detect_model_class_from_filename(model_path: Path) -> Any:
     """Auto-detect anomaly detection model class from checkpoint filename."""
     filename = model_path.name.lower()
@@ -147,7 +147,7 @@ def _detect_model_class_from_filename(model_path: Path) -> Any:
         logger.warning(f"Could not detect model type from {filename}, defaulting to PaDiM")
         return Padim
 
-# %% ../../nbs/06_inference.prediction_system.ipynb #c2b8e68a
+# %% ../../nbs/06_inference.prediction_system.ipynb #c7fe8a80
 def _use_torch_op(
     preprocessing_fn:Callable
 ) -> bool:
@@ -171,7 +171,7 @@ def _use_torch_op(
 
 
 
-# %% ../../nbs/06_inference.prediction_system.ipynb #ff130114
+# %% ../../nbs/06_inference.prediction_system.ipynb #840158d1
 def read_image_cv_(
     im_path:Union[str, Path]
     )->np.ndarray:
@@ -184,7 +184,7 @@ def read_image_cv_(
 
 
 
-# %% ../../nbs/06_inference.prediction_system.ipynb #3ef34e22
+# %% ../../nbs/06_inference.prediction_system.ipynb #bb089e39
 def _numpy_to_tensor(
     image:np.ndarray, # Input image as numpy array
     as_tensor:bool=True, # Whether to return a tensor
@@ -208,7 +208,7 @@ def _numpy_to_tensor(
 
 
 
-# %% ../../nbs/06_inference.prediction_system.ipynb #e26d627f
+# %% ../../nbs/06_inference.prediction_system.ipynb #2ec823f7
 def _predict_with_torch_model_(
     model_path:Path, # Path to the model file
     image_path:Path, # Path to the image file
@@ -245,7 +245,7 @@ def _predict_with_torch_model_(
 
 
 
-# %% ../../nbs/06_inference.prediction_system.ipynb #abaf0442
+# %% ../../nbs/06_inference.prediction_system.ipynb #f6c0ac33
 @patch
 def _load_checkpoint(self:TorchInferencer, path: str | Path) -> dict:
     if isinstance(path, str):
@@ -256,7 +256,7 @@ def _load_checkpoint(self:TorchInferencer, path: str | Path) -> dict:
 
     return torch.load(path, map_location=self.device, weights_only=False)
 
-# %% ../../nbs/06_inference.prediction_system.ipynb #6de4894d
+# %% ../../nbs/06_inference.prediction_system.ipynb #4e3a2653
 def _predict_with_checkpoint_model_(
     model_path:Path, # Path to the model file
     image_path:Path, # Path to the image file
@@ -297,7 +297,7 @@ def _predict_with_checkpoint_model_(
 
 
 
-# %% ../../nbs/06_inference.prediction_system.ipynb #53a8942b
+# %% ../../nbs/06_inference.prediction_system.ipynb #52a5b130
 def _predict_with_openvino_model_(
     model_path:Path, # Path to the model file
     image_path:Path, # Path to the image file
@@ -332,7 +332,7 @@ def _predict_with_openvino_model_(
 
 
 
-# %% ../../nbs/06_inference.prediction_system.ipynb #0f8c82a3
+# %% ../../nbs/06_inference.prediction_system.ipynb #508ac104
 def _create_prediction_result_dict(
     model_path: Path,  # Path of the model file
     image_path: Path,  # Path of the image file or image directory
@@ -352,7 +352,7 @@ def _create_prediction_result_dict(
 		'saved_path': None
     }
 
-# %% ../../nbs/06_inference.prediction_system.ipynb #295be638
+# %% ../../nbs/06_inference.prediction_system.ipynb #e2968ec8
 def _validate_prediction_inputs(
     anomaly_score: float,# Anomaly score
     prediction: str, # Prediction
@@ -366,7 +366,7 @@ def _validate_prediction_inputs(
     if style not in ["heatmap_only", "image_only", "side_by_side"]:
         raise ValueError(f"Invalid style: {style}. Must be one of: heatmap_only, combined, side_by_side")
 
-# %% ../../nbs/06_inference.prediction_system.ipynb #b4db1449
+# %% ../../nbs/06_inference.prediction_system.ipynb #96117367
 def _extract_image_from_result(
     prediction_result: ImageResult # Prediction result object ImageResult is a SimpleNamespace from Anomalib
     ) -> np.ndarray:
@@ -382,7 +382,7 @@ def _extract_image_from_result(
     except Exception as e:
         raise ValueError(f"Failed to load image from prediction_result: {e}")
 
-# %% ../../nbs/06_inference.prediction_system.ipynb #dcfbfce7
+# %% ../../nbs/06_inference.prediction_system.ipynb #29b11574
 def _extract_heatmap_from_result(
     prediction_result: ImageResult # Prediction result object ImageResult is a SimpleNamespace from Anomalib
     ) -> np.ndarray: # Return a numpy array of the heatmap
@@ -395,7 +395,7 @@ def _extract_heatmap_from_result(
     except AttributeError:
         raise ValueError("prediction_result must have a 'heat_map' attribute")
 
-# %% ../../nbs/06_inference.prediction_system.ipynb #67e86bee
+# %% ../../nbs/06_inference.prediction_system.ipynb #633f1303
 def calculate_heatmap_summary(
     heatmap: np.ndarray # Heatmap array to analyze
 ) -> dict: # Dictionary containing min, max, and other statistics
@@ -413,7 +413,7 @@ def calculate_heatmap_summary(
     }
 
 
-# %% ../../nbs/06_inference.prediction_system.ipynb #3aaacf1f
+# %% ../../nbs/06_inference.prediction_system.ipynb #5b39de5a
 def _normalize_heatmap_for_opencv(
     heatmap: np.ndarray # Heatmap array to normalize
     ) -> np.ndarray: # Return a numpy array of the normalized heatmap
@@ -425,7 +425,7 @@ def _normalize_heatmap_for_opencv(
 
 
 
-# %% ../../nbs/06_inference.prediction_system.ipynb #c88e3f3a
+# %% ../../nbs/06_inference.prediction_system.ipynb #6ffe8dde
 def _apply_colormap_to_heatmap(
     heatmap_normalized: np.ndarray # Normalized heatmap to apply colormap to
     ) -> np.ndarray: # Return a numpy array of the colored heatmap
@@ -435,7 +435,7 @@ def _apply_colormap_to_heatmap(
 
 
 
-# %% ../../nbs/06_inference.prediction_system.ipynb #12099e6b
+# %% ../../nbs/06_inference.prediction_system.ipynb #d6ee6682
 def _get_default_figsize(style: str) -> Tuple[int, int]:
     """Get default figure size based on visualization style."""
     if style == "heatmap_only":
@@ -447,7 +447,7 @@ def _get_default_figsize(style: str) -> Tuple[int, int]:
     else:
         return (10, 8)
 
-# %% ../../nbs/06_inference.prediction_system.ipynb #f5ac00e9
+# %% ../../nbs/06_inference.prediction_system.ipynb #08645fb4
 def _ensure_rgb_format(
     image_array: np.ndarray # Image array to ensure is in RGB format
     ) -> np.ndarray: # Return a numpy array of the image in RGB format
@@ -457,7 +457,7 @@ def _ensure_rgb_format(
     else:
         return cv2.cvtColor(image_array, cv2.COLOR_BGR2RGB)
 
-# %% ../../nbs/06_inference.prediction_system.ipynb #4ab4f19f
+# %% ../../nbs/06_inference.prediction_system.ipynb #2af05503
 def _add_colorbar_to_plot(
     heatmap: np.ndarray, # Heatmap array to add colorbar to
     colormap: Optional[str] # Colormap to use
@@ -469,7 +469,7 @@ def _add_colorbar_to_plot(
     cbar = plt.colorbar(im, shrink=0.8)
     cbar.set_label('Anomaly Score', rotation=270, labelpad=20)
 
-# %% ../../nbs/06_inference.prediction_system.ipynb #0e5204ff
+# %% ../../nbs/06_inference.prediction_system.ipynb #0056c47b
 def _save_image_with_opencv(
     image_array: np.ndarray, # Image array to save
     save_path: Path, # Path to save the image including the file name+extension
@@ -493,7 +493,7 @@ def _save_image_with_opencv(
         cv2.imwrite(str(save_path), image_array)
         logger.info(f"Image saved to: {save_path}")
 
-# %% ../../nbs/06_inference.prediction_system.ipynb #40b657db
+# %% ../../nbs/06_inference.prediction_system.ipynb #31e373f2
 def _show_heatmap_only(
     heatmap: np.ndarray,
     anomaly_score: float,
@@ -535,7 +535,7 @@ def _show_heatmap_only(
         plt.close()
 
 
-# %% ../../nbs/06_inference.prediction_system.ipynb #e95892f1
+# %% ../../nbs/06_inference.prediction_system.ipynb #e45e3c71
 def _show_side_by_side_visualization(
     original_array: np.ndarray,
     heatmap: np.ndarray,
@@ -586,7 +586,7 @@ def _show_side_by_side_visualization(
 
 
 
-# %% ../../nbs/06_inference.prediction_system.ipynb #cbb5cf02
+# %% ../../nbs/06_inference.prediction_system.ipynb #fcde6e47
 def _show_image_only(
     image: np.ndarray,
     image_path: Union[str, Path],
@@ -639,7 +639,7 @@ def _show_image_only(
         plt.close()
 
 
-# %% ../../nbs/06_inference.prediction_system.ipynb #bd46ebae
+# %% ../../nbs/06_inference.prediction_system.ipynb #07c55027
 def show_prediction_result(
     image_path: Union[str, Path],
     prediction_result: ImageResult,
@@ -717,7 +717,7 @@ def show_prediction_result(
     else:
         raise ValueError(f"Unknown style: {style}. Use 'image_only', 'heatmap_only', or 'side_by_side'")
 
-# %% ../../nbs/06_inference.prediction_system.ipynb #828f9dc3
+# %% ../../nbs/06_inference.prediction_system.ipynb #28c55a11
 def predict_image(
     model_path: Union[str, Path],  # Path to the model file
     image_path: Union[str, Path],  # Path to the image file
@@ -846,7 +846,7 @@ def predict_image(
 
 
 
-# %% ../../nbs/06_inference.prediction_system.ipynb #a15744e6
+# %% ../../nbs/06_inference.prediction_system.ipynb #b3c975fe
 def process_single_image(
     model_path: Path, # Path to the model file
     image_path: Path, # Path to the image file
@@ -880,13 +880,13 @@ def process_single_image(
     return result
 
 
-# %% ../../nbs/06_inference.prediction_system.ipynb #875cfd4c
+# %% ../../nbs/06_inference.prediction_system.ipynb #73267936
 def validate_image_list(image_list: List[Union[str, Path]]) -> None:
     """Validate that image list is not empty."""
     if not image_list:
         raise ValueError("Image list is empty")
 
-# %% ../../nbs/06_inference.prediction_system.ipynb #15fb51f9
+# %% ../../nbs/06_inference.prediction_system.ipynb #e44f40cd
 def filter_valid_images(
     image_list: List[Union[str, Path]] # List of image paths
     ) -> List[Path]: # List of valid image paths
@@ -900,7 +900,7 @@ def filter_valid_images(
             print(f"⚠️  Image not found, skipping: {img_path}")
     return valid_images
 
-# %% ../../nbs/06_inference.prediction_system.ipynb #b47c8b0b
+# %% ../../nbs/06_inference.prediction_system.ipynb #cbe5f060
 def ensure_valid_images_exist(
     valid_images: List[Path] # List of valid image paths
     ) -> None:
@@ -908,7 +908,7 @@ def ensure_valid_images_exist(
     if not valid_images:
         raise ValueError("No valid images found in the provided list")
 
-# %% ../../nbs/06_inference.prediction_system.ipynb #1a3ebdd0
+# %% ../../nbs/06_inference.prediction_system.ipynb #7080c0a3
 def process_images_batch(
     valid_images: List[Path], # List of valid image paths
     model_path: Path, # Path to the model file
@@ -959,7 +959,7 @@ def process_images_batch(
 
     return results, anomaly_count, failed_count
 
-# %% ../../nbs/06_inference.prediction_system.ipynb #bfedea43
+# %% ../../nbs/06_inference.prediction_system.ipynb #82091e8c
 def calculate_batch_statistics(
     results: List[Dict[str, Any]],
     image_list: List[Union[str, Path]],
@@ -988,7 +988,7 @@ def calculate_batch_statistics(
         'output_directory': str(output_dir)
     }
 
-# %% ../../nbs/06_inference.prediction_system.ipynb #573cf6c5
+# %% ../../nbs/06_inference.prediction_system.ipynb #5fb2aeb7
 def print_batch_summary(batch_stats: Dict[str, Any]) -> None:
     """Print batch processing summary."""
     print(f"\n📊 Batch Processing Summary:")
@@ -1002,7 +1002,7 @@ def print_batch_summary(batch_stats: Dict[str, Any]) -> None:
     print(f"   Anomalies: {batch_stats['anomaly_count']} ({batch_stats['anomaly_percentage']:.1f}%)")
     print(f"   Average Score: {batch_stats['average_anomaly_score']:.4f}")
 
-# %% ../../nbs/06_inference.prediction_system.ipynb #5e5b44b7
+# %% ../../nbs/06_inference.prediction_system.ipynb #449b8679
 def prepare_json_results(results: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """Remove non-serializable data from results for JSON export."""
     json_results = []
@@ -1036,7 +1036,7 @@ def save_results_to_json(
     return str(results_file)
 
 
-# %% ../../nbs/06_inference.prediction_system.ipynb #deadb9c5
+# %% ../../nbs/06_inference.prediction_system.ipynb #ef6c974e
 def print_processing_info(
     valid_images: List[Path], # List of valid image paths
     model_path: Path, # Path to the model file
@@ -1066,7 +1066,7 @@ def setup_output_directory(
     output_dir.mkdir(parents=True, exist_ok=True)
     return output_dir
 
-# %% ../../nbs/06_inference.prediction_system.ipynb #37e64a64
+# %% ../../nbs/06_inference.prediction_system.ipynb #1a1359e3
 def predict_image_list(
     model_path: Union[str, Path], # Path to the model file
     image_list: List[Union[str, Path]], # List of image paths
@@ -1127,7 +1127,7 @@ def predict_image_list(
         'results': results
     }
 
-# %% ../../nbs/06_inference.prediction_system.ipynb #8b7ce8a2
+# %% ../../nbs/06_inference.prediction_system.ipynb #ab12b2d1
 def _read_image_list_from_file(
     image_list_file: Union[str, Path] # text file with one image path per line
     ) -> List[str]: # list of image paths
@@ -1149,7 +1149,7 @@ def _read_image_list_from_file(
 
     return image_list
 
-# %% ../../nbs/06_inference.prediction_system.ipynb #a58a5392
+# %% ../../nbs/06_inference.prediction_system.ipynb #e818c881
 def predict_image_list_from_file_enhanced(
     model_path: Union[str, Path], # path to the model(.ckpt, .pt, .onnx, .xml)
     image_list_file: Union[str, Path], # text file with one image path per line
@@ -1194,7 +1194,7 @@ def predict_image_list_from_file_enhanced(
     )
 
 
-# %% ../../nbs/06_inference.prediction_system.ipynb #7ab9bc28
+# %% ../../nbs/06_inference.prediction_system.ipynb #bb134d7e
 def get_images_(
     image_input: Union[str, Path] # Path to image or directory containing images
     ) -> List[Union[str, Path]]:
@@ -1224,7 +1224,7 @@ def get_images_(
         else:
             return []
 
-# %% ../../nbs/06_inference.prediction_system.ipynb #2ca7b4e0
+# %% ../../nbs/06_inference.prediction_system.ipynb #c124295a
 def create_poster_from_results_(
     poster_results,# List of inference results
     poster_idx,# Index of the poster
@@ -1343,7 +1343,7 @@ def create_poster_from_results_(
             plt.close()
         return None
 
-# %% ../../nbs/06_inference.prediction_system.ipynb #edc81ded
+# %% ../../nbs/06_inference.prediction_system.ipynb #3dd932b3
 def run_inference_batch(
 
     image_list:List[Union[str, Path]],  # list of image paths
@@ -1391,7 +1391,7 @@ def run_inference_batch(
 
     return batch_results, results
 
-# %% ../../nbs/06_inference.prediction_system.ipynb #5f7655e9
+# %% ../../nbs/06_inference.prediction_system.ipynb #49063350
 def create_inference_poster_(
     model_path: Union[str, Path], # Path to trained model (pt, ckpt, xml, etc.)
     validation_images: Optional[Union[str, Path, List[Union[str, Path]]]] = None, # Path to validation images folder or list of image paths
@@ -1557,7 +1557,7 @@ def create_inference_poster_(
 
 
 
-# %% ../../nbs/06_inference.prediction_system.ipynb #e4a06d7c
+# %% ../../nbs/06_inference.prediction_system.ipynb #c279f178
 def _adjust_poster_dimensions(
     num_images: int,  # Number of images to display
     default_rows: int,  # Default number of rows
@@ -1979,7 +1979,7 @@ def train_model_and_create_posters(
 
 
 
-# %% ../../nbs/06_inference.prediction_system.ipynb #349a06ad
+# %% ../../nbs/06_inference.prediction_system.ipynb #d8160f74
 def save_heatmap_visualization(
     image_path: Union[str, Path], # Path to the image file
     pred_result: ImageVisualizer, # Prediction result from anomaly detection
@@ -2052,7 +2052,7 @@ def save_heatmap_visualization(
 
 
 
-# %% ../../nbs/06_inference.prediction_system.ipynb #cec8d53e
+# %% ../../nbs/06_inference.prediction_system.ipynb #42b2db7c
 def batch_predict(model_path: Union[str, Path],
                  image_folder: Union[str, Path],
                  save_heatmaps: bool = False,
@@ -2178,7 +2178,7 @@ def batch_predict(model_path: Union[str, Path],
     }
 
 
-# %% ../../nbs/06_inference.prediction_system.ipynb #ff0f6c51
+# %% ../../nbs/06_inference.prediction_system.ipynb #b9caa0e9
 def split_image_list(image_list: List[Union[str, Path]],
                     num_batches: int,
                     batch_strategy: str = "round_robin") -> List[List[Path]]:
@@ -2305,7 +2305,7 @@ def generate_hpc_commands(model_path: Union[str, Path],
     return commands
 
 
-# %% ../../nbs/06_inference.prediction_system.ipynb #8b7d214a
+# %% ../../nbs/06_inference.prediction_system.ipynb #f26f7345
 def predict_image_list_from_file(
     model_path: Union[str, Path], # path to the model(.ckpt, .pt, .onnx, .xml)
     image_list_file: Union[str, Path], # text file with one image path per line
@@ -2346,7 +2346,7 @@ def predict_image_list_from_file(
     )
 
 
-# %% ../../nbs/06_inference.prediction_system.ipynb #134cea7b
+# %% ../../nbs/06_inference.prediction_system.ipynb #6d09c8b7
 def merge_batch_results(results_dir: Union[str, Path],
                        output_file: Optional[Union[str, Path]] = None) -> Dict[str, Any]:
     """

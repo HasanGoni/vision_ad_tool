@@ -7,7 +7,7 @@ Docs: https://HasanGoni.github.io/vision_ad_tool/training.hyperparameter_hydra_c
 # %% auto #0
 __all__ = ['run_hyperparam_search', 'hyperparam_search_cli']
 
-# %% ../../nbs/19_training.hyperparameter_hydra_cli.ipynb #d034ddc3
+# %% ../../nbs/19_training.hyperparameter_hydra_cli.ipynb #1f8fba23
 from pathlib import Path
 from typing import Any
 
@@ -18,7 +18,7 @@ from .hyperparameter_search import diff_parameter_and_save_poster
 from ..tutorials.end2end_cli import cfg_to_dict
 
 
-# %% ../../nbs/19_training.hyperparameter_hydra_cli.ipynb #a12e77cb
+# %% ../../nbs/19_training.hyperparameter_hydra_cli.ipynb #c54ec294
 def run_hyperparam_search(cfg: DictConfig) -> dict[str, Any]:
     """Run hyperparameter grid search and save a comparison poster."""
     params = cfg_to_dict(cfg)
@@ -28,11 +28,11 @@ def run_hyperparam_search(cfg: DictConfig) -> dict[str, Any]:
     return diff_parameter_and_save_poster(**params)
 
 
-# %% ../../nbs/19_training.hyperparameter_hydra_cli.ipynb #9d61d4a0
+# %% ../../nbs/19_training.hyperparameter_hydra_cli.ipynb #44505fc9
 _CONF = str(Path(__file__).resolve().parent.parent / 'tutorials' / 'conf')
 
 
-# %% ../../nbs/19_training.hyperparameter_hydra_cli.ipynb #249feb45
+# %% ../../nbs/19_training.hyperparameter_hydra_cli.ipynb #151ca993
 @hydra.main(version_base=None, config_path=_CONF, config_name='hyperparam_search')
 def hyperparam_search_cli(cfg: DictConfig) -> None:
     """Hyperparameter grid search + comparison poster."""

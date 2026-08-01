@@ -7,7 +7,7 @@ Docs: https://HasanGoni.github.io/vision_ad_tool/inference.multinode_from_aiop_t
 # %% auto #0
 __all__ = ['queue', 'print_status', 'HPC_Job', 'DistributeHPC']
 
-# %% ../../nbs/11_inference.multinode_from_aiop_tool.ipynb #2b102de9
+# %% ../../nbs/11_inference.multinode_from_aiop_tool.ipynb #fc1e48d5
 from multiprocessing import Value, Queue
 import subprocess
 import signal

@@ -8,7 +8,7 @@ Docs: https://HasanGoni.github.io/vision_ad_tool/inference.unified_with_threshol
 __all__ = ['run_jupyter_inference_with_organization', 'run_parallel_inference_with_organization',
            'run_hpc_inference_with_organization', 'unified_inference_with_threshold_posters']
 
-# %% ../../nbs/15_inference.unified_with_threshold_posters.ipynb #5e290049
+# %% ../../nbs/15_inference.unified_with_threshold_posters.ipynb #fb776551
 import os
 import sys
 import shutil
@@ -26,7 +26,7 @@ import matplotlib.pyplot as plt
 from fastcore.all import *
 from fastcore.test import *
 
-# %% ../../nbs/15_inference.unified_with_threshold_posters.ipynb #1c442a9f
+# %% ../../nbs/15_inference.unified_with_threshold_posters.ipynb #c23e0a6d
 # Import from existing modules
 from be_vision_ad_tools.inference.prediction_system import (
     predict_image_list_from_file_enhanced,
@@ -54,7 +54,7 @@ from be_vision_ad_tools.inference.unified_inference import (
     resolve_test_folders_smart
 )
 
-# %% ../../nbs/15_inference.unified_with_threshold_posters.ipynb #59544f79
+# %% ../../nbs/15_inference.unified_with_threshold_posters.ipynb #25df6ca4
 def run_jupyter_inference_with_organization(
     model_path: Union[str, Path],  # Path to the model file
     image_list: Union[str, Path, List[Path]],  # Image paths or list file
@@ -167,7 +167,7 @@ def run_jupyter_inference_with_organization(
         'output_dir': str(output_dir)
     }
 
-# %% ../../nbs/15_inference.unified_with_threshold_posters.ipynb #b9c4d429
+# %% ../../nbs/15_inference.unified_with_threshold_posters.ipynb #4b17ebcf
 def run_parallel_inference_with_organization(
     model_path: Union[str, Path],  # Path to the model file
     image_path: Union[str, Path, List[Path]],  # Images or directory
@@ -276,7 +276,7 @@ def run_parallel_inference_with_organization(
         'output_dir': str(output_dir)
     }
 
-# %% ../../nbs/15_inference.unified_with_threshold_posters.ipynb #d43f47b9
+# %% ../../nbs/15_inference.unified_with_threshold_posters.ipynb #de90d313
 def run_hpc_inference_with_organization(
     model_path: Union[str, Path],  # Path to the model file
     image_path: Union[str, Path],  # Images directory
@@ -395,7 +395,7 @@ def run_hpc_inference_with_organization(
         'output_dir': str(output_dir)
     }
 
-# %% ../../nbs/15_inference.unified_with_threshold_posters.ipynb #01ba351a
+# %% ../../nbs/15_inference.unified_with_threshold_posters.ipynb #02eaa82f
 def unified_inference_with_threshold_posters(
     model_path: Union[str, Path],  # Path to trained model
     test_folders: Union[str, Path, List[Union[str, Path]]],  # Image folder(s) or file path(s)

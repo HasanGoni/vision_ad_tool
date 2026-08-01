@@ -9,7 +9,7 @@ __all__ = ['CURRETNT_NB', 'resolve_test_folders', 'validate_model_path', 'split_
            'create_inference_command', 'create_hpc_job', 'create_multinode_jobs_fresh', 'submit_hpc_jobs',
            'wait_and_summarize_jobs', 'run_multinode_inference']
 
-# %% ../../nbs/10_inference.multinode_infer.ipynb #4f755687
+# %% ../../nbs/10_inference.multinode_infer.ipynb #3ad8c4fe
 import sys
 from pathlib import Path
 from typing import List
@@ -17,13 +17,13 @@ from fastcore.all import *
 from fastcore.script import *
 
 
-# %% ../../nbs/10_inference.multinode_infer.ipynb #d2cb64d9
+# %% ../../nbs/10_inference.multinode_infer.ipynb #33f302e4
 from be_vision_ad_tools.inference.multinode_from_aiop_tool import (
     DistributeHPC, HPC_Job
 )
 
 
-# %% ../../nbs/10_inference.multinode_infer.ipynb #8658e9de
+# %% ../../nbs/10_inference.multinode_infer.ipynb #99555e1f
 CURRETNT_NB='/home/ai_dsx.work/data/projects/be-vision-ad-tools/nbs'
 
 # %% ../../nbs/10_inference.multinode_infer.ipynb #42e6da46
