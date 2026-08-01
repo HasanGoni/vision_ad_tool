@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vision-ad-pyskills"
+version = "0.1.0"
+description = "pyskills bridge for be_vision_ad_tools"
+requires-python = ">=3.12"
+dependencies = ["pyskills"]
+
+[project.entry-points.pyskills]
+"verify_ad.skill" = "verify_ad.skill"
+"train_ad.skill" = "train_ad.skill"
+"infer_ad.skill" = "infer_ad.skill"
+"organize_ad.skill" = "organize_ad.skill"
+
+[tool.setuptools.packages.find]
+include = ["verify_ad*", "train_ad*", "infer_ad*", "organize_ad*"]
