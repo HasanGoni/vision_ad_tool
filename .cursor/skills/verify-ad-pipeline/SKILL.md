@@ -23,7 +23,7 @@ Do not invent other verification commands.
 Verified AD toolbox:
 - uv sync: OK
 - imports: flexible_trainer, unified_inference, anomaly_score_organizer
-- nbdev_test: passed
+- nbdev-test: passed
 - no uncommitted scratch in output_verify/
 ```
 
@@ -43,7 +43,7 @@ Uses `uv sync` if available, else `pip install -e .`. Run this after any `pyproj
 bash .cursor/skills/verify-ad-pipeline/scripts/verify_imports.sh
 ```
 
-Confirms the three main entry surfaces import without error. No GPU training here — if this fails, fix imports before running anything heavier.
+Confirms the three main entry surfaces import without error and that `vad-train-submit --help` resolves (HPC submit CLI smoke). No GPU training here — if this fails, fix imports before running anything heavier.
 
 ## 3. nbdev CI
 
@@ -51,7 +51,15 @@ Confirms the three main entry surfaces import without error. No GPU training her
 bash .cursor/skills/verify-ad-pipeline/scripts/verify_nbdev.sh
 ```
 
-Same as `.github/workflows/test.yaml` (fastai/nbdev-ci). If you edited notebooks under `nbs/`, run `nbdev_prepare` first so `be_vision_ad_tools/` is in sync.
+Same as `.github/workflows/test.yaml` (fastai/nbdev-ci). If you edited notebooks under `nbs/`, run `uv run nbdev-prepare` first so `be_vision_ad_tools/` is in sync.
+
+## VERIFY — read script output
+
+After each script, confirm pass criteria in the output — don't rely on exit code alone:
+
+- `verify_sync.sh` — sync completed without errors (`uv sync` or `pip install -e .` OK)
+- `verify_imports.sh` — all three entry surfaces imported (`flexible_trainer`, `unified_inference`, `anomaly_score_organizer`) and `vad-train-submit --help` OK
+- `verify_nbdev.sh` — `nbdev-test` reports passed (note the test count in the log)
 
 ## Preprocessing contract (group policy)
 
@@ -61,6 +69,13 @@ When verifying changes that touch data loading or transforms, confirm these rule
 - **No silent PIL 16→8-bit conversion** — preserve bit depth intentionally
 - **No elastic deformation** — alters void/defect geometry
 - **Patch/stitch rules** — use `TilerConfigurationCallback` (not `TilingConfigurationCallback`)
+
+## What NOT to do
+
+- Don't claim "it works" without running all three verification scripts.
+- Don't skip reading script output — confirm imports and `nbdev-test` actually passed.
+- Don't invent other verification commands or bypass the scripts in `scripts/`.
+- Don't commit library changes under `be_vision_ad_tools/` or `nbs/` without verification.
 
 ## Only after all of this
 

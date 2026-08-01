@@ -1,0 +1,25 @@
+# @package _global_
+# Score images and organize into threshold folders (predict_and_organize_by_score)
+
+model_path: ???
+image_list_file: ???
+output_dir: ./score_review
+score_thresholds:
+  - 0.3
+  - 0.4
+  - 0.5
+  - 0.6
+  - 0.7
+  - 0.8
+  - 0.9
+  - 1.0
+copy_mode: true
+save_metadata: true
+create_posters: true
+images_per_poster: 20
+image_size:
+  - 224
+  - 224
+grid_cols: 5
+annotate_with_index: true
+device: auto

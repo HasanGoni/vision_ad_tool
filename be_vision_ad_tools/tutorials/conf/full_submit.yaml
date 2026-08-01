@@ -1,0 +1,10 @@
+# @package _global_
+defaults:
+  - full
+  - hpc/submit_defaults
+  - _self_
+
+hpc:
+  job_name: vad-full
+  local_cli: vad-full
+  walltime_minutes: 480

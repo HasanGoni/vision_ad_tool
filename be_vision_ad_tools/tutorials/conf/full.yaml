@@ -1,0 +1,27 @@
+# @package _global_
+# Train, then unified inference with threshold organization
+
+train:
+  data_root: ???
+  class_name: anomaly_detection
+  normal_dir: good
+  abnormal_dir: bad
+  model_name: patchcore
+  backbone: resnet18
+  max_epochs: 100
+  save_path: ./models
+  export_formats:
+    - torch
+
+infer_organize:
+  test_folders: ???
+  output_dir: ./full_pipeline_results
+  execution_mode: auto
+  batch_size: 100
+  create_posters: true
+  save_heatmaps: false
+  score_thresholds:
+    - 0.5
+    - 0.7
+    - 0.9
+    - 1.0

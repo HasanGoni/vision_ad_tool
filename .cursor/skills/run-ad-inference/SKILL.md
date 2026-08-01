@@ -5,14 +5,16 @@ description: Score images for anomalies using a trained be_vision_ad_tools model
 
 # Run AD inference
 
-`be_vision_ad_tools.inference.unified_inference` auto-detects the environment (Jupyter, local parallel, HPC/bsub) and routes accordingly.
+`vad-infer` wraps `be_vision_ad_tools.inference.unified_inference` with Hydra config defaults in `be_vision_ad_tools/tutorials/conf/infer.yaml`. Auto-detects Jupyter vs HPC vs local parallel execution.
 
 ## Public API (use only these)
 
-| Action | Command |
-|--------|---------|
+| Step | Command |
+|------|---------|
+| Inference (Hydra CLI) | `vad-infer model_path=<ckpt> test_folders=<path> [execution_mode=auto]` |
 | Inference (script) | `bash .cursor/skills/run-ad-inference/scripts/run_inference.sh <model.ckpt> <image_folder> [auto\|parallel\|hpc\|jupyter]` |
-| Inference (Python) | `unified_inference(...)` — see below |
+
+Do not invent other commands.
 
 ## Execution modes
 
@@ -23,6 +25,14 @@ description: Score images for anomalies using a trained be_vision_ad_tools model
 | `hpc` | LSF/bsub multinode (set `num_nodes`) |
 | `jupyter` | Interactive notebook session |
 
+## Running it (Hydra CLI)
+
+```bash
+vad-infer model_path=/path/to/model.ckpt test_folders=/path/to/images execution_mode=auto
+```
+
+`test_folders` accepts a folder path, single image, or text file with one path per line.
+
 ## Running it (script)
 
 ```bash
@@ -32,27 +42,15 @@ bash .cursor/skills/run-ad-inference/scripts/run_inference.sh \
   auto
 ```
 
-## Running it (Python)
+## Config overrides
 
-```python
-from be_vision_ad_tools.inference.unified_inference import unified_inference
-
-result = unified_inference(
-    model_path="/path/to/model.ckpt",
-    test_folders="/path/to/images",       # folder, file, or list
-    execution_mode="auto",
-    batch_size=100,
-    save_heatmaps=True,
-    heatmap_style="cv2_side_by_side",
-    output_dir="./inference_output",
-)
+```bash
+vad-infer model_path=/path/model.ckpt test_folders=/path/images save_heatmaps=true heatmap_style=cv2_side_by_side output_dir=./inference_output
 ```
-
-`test_folders` accepts a single path, a list, or a text file with one image path per line.
 
 ## What "done" looks like (demonstration)
 
-```
+```text
 Inference complete:
 - model: patchcore checkpoint (my_product)
 - images: 1,240 scored from /data/lot_42/
@@ -63,9 +61,10 @@ Inference complete:
 
 ## What NOT to do
 
-- Don't shell out to random Python one-liners outside `unified_inference` — it handles path resolution and batching.
+- Don't shell out to random Python one-liners outside `vad-infer` / `unified_inference`.
 - Don't assume single-image serial when the folder has thousands of images — use `auto` or `parallel`.
-- For organizing scores into folders + posters, use the `organize-anomaly-scores` skill instead.
+- For inference + score buckets + posters in one step, use `infer-organize-ad` (`vad-infer-organize`).
+- For organizing from an image list file, use `organize-anomaly-scores` (`vad-organize`).
 
 ## pyskills twin
 

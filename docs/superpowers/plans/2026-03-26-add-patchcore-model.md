@@ -4,7 +4,7 @@
 
 **Goal:** Add PatchCore model with optimized defaults alongside PaDiM throughout all training, inference, export, and config notebooks.
 
-**Architecture:** Add PatchCore-specific fields (`coreset_sampling_ratio`, `num_neighbors`) to `FlexibleTrainingConfig`, wire PatchCore params in `train_anomaly_model()`, add an exported `get_model_configs()` helper, then update all demo cells to loop over both models. Since this is an nbdev project, all code changes happen in notebooks (`.ipynb`), then `nbdev_export` regenerates `.py` files.
+**Architecture:** Add PatchCore-specific fields (`coreset_sampling_ratio`, `num_neighbors`) to `FlexibleTrainingConfig`, wire PatchCore params in `train_anomaly_model()`, add an exported `get_model_configs()` helper, then update all demo cells to loop over both models. Since this is an nbdev project, all code changes happen in notebooks (`.ipynb`), then `nbdev-export` regenerates `.py` files.
 
 **Tech Stack:** anomalib (v1.x), nbdev, PyTorch Lightning
 
@@ -87,10 +87,10 @@ Change to:
             layers = ["layer3"]
 ```
 
-- [ ] **Step 6: Run nbdev_export and verify**
+- [ ] **Step 6: Run nbdev-export and verify**
 
 ```bash
-cd /home/hasan/workspace/projects/git_data/vision_ad_tool && nbdev_export
+cd /home/hasan/workspace/projects/git_data/vision_ad_tool && nbdev-export
 ```
 
 Verify the generated `.py` files contain PatchCore changes:
@@ -154,10 +154,10 @@ def get_model_configs(
     return [padim_config, patchcore_config]
 ```
 
-- [ ] **Step 2: Run nbdev_export and verify**
+- [ ] **Step 2: Run nbdev-export and verify**
 
 ```bash
-cd /home/hasan/workspace/projects/git_data/vision_ad_tool && nbdev_export
+cd /home/hasan/workspace/projects/git_data/vision_ad_tool && nbdev-export
 grep -n "get_model_configs" be_vision_ad_tools/training/flexible_trainer.py
 ```
 
@@ -286,10 +286,10 @@ To:
 model_names = ['padim', 'patchcore']
 ```
 
-- [ ] **Step 3: Run nbdev_export**
+- [ ] **Step 3: Run nbdev-export**
 
 ```bash
-cd /home/hasan/workspace/projects/git_data/vision_ad_tool && nbdev_export
+cd /home/hasan/workspace/projects/git_data/vision_ad_tool && nbdev-export
 ```
 
 - [ ] **Step 4: Commit**
@@ -434,16 +434,16 @@ git commit -m "feat: Add PatchCore references to inference demo notebooks"
 
 ---
 
-### Task 9: Run nbdev_export and final verification
+### Task 9: Run nbdev-export and final verification
 
 **Files:**
 - All notebooks
 - All generated `be_vision_ad_tools/**/*.py`
 
-- [ ] **Step 1: Run nbdev_export**
+- [ ] **Step 1: Run nbdev-export**
 
 ```bash
-cd /home/hasan/workspace/projects/git_data/vision_ad_tool && nbdev_export
+cd /home/hasan/workspace/projects/git_data/vision_ad_tool && nbdev-export
 ```
 
 - [ ] **Step 2: Verify PatchCore in generated files**

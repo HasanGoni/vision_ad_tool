@@ -1,0 +1,33 @@
+# @package _global_
+# Hyperparameter grid search + comparison poster (diff_parameter_and_save_poster)
+
+data_root: ???
+test_images: ???
+normal_dir: good
+abnormal_dir: bad
+class_name: hyperparam_search
+
+model_names:
+  - padim
+  - patchcore
+backbones:
+  - wide_resnet50
+n_features_list:
+  - 64
+layers:
+  - - layer1
+    - layer2
+    - layer3
+
+max_epochs: 10
+max_models: 4
+max_test_images: 10
+run_validation_tests: false
+show_original: false
+device: auto
+figsize:
+  - 20
+  - 12
+output_file: modular_batch_comparison_poster.png
+model_path_name: test_hyperparameter_results
+result_path_name: test_hyperparameter_models

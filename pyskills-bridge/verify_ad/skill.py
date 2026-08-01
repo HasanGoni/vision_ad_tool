@@ -14,7 +14,7 @@ Use after editing `be_vision_ad_tools/` or `nbs/`, before telling the user a cha
 Verified AD toolbox:
 - sync: OK
 - imports: flexible_trainer, unified_inference, anomaly_score_organizer
-- nbdev_test: passed
+- nbdev-test: passed
 ```
 """
 
@@ -56,8 +56,8 @@ def smoke_imports() -> str:
 
 
 def run_nbdev_test() -> str:
-    """Run nbdev_test (CI equivalent)."""
-    cmd = ['uv', 'run', 'nbdev_test'] if _which('uv') else ['nbdev_test']
+    """Run nbdev-test (CI equivalent)."""
+    cmd = ['uv', 'run', 'nbdev-test'] if _which('uv') else ['nbdev-test']
     return _run(cmd)
 
 

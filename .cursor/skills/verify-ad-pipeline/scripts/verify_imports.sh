@@ -12,3 +12,8 @@ from be_vision_ad_tools.inference.unified_inference import unified_inference
 from be_vision_ad_tools.inference.anomaly_score_organizer import predict_and_organize_by_score
 print('OK: core imports succeeded')
 "
+
+SUBMIT="vad-train-submit"
+if command -v uv >/dev/null 2>&1; then SUBMIT="uv run vad-train-submit"; fi
+$SUBMIT --help >/dev/null
+echo "OK: vad-train-submit --help"
