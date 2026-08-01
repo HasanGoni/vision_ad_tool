@@ -80,4 +80,4 @@ Open at least one validation poster when verifying.
 
 ## pyskills twin
 
-`pyskills-bridge/train_infer_ad/skill.py` (if present)
+`pyskills-bridge/train_infer_ad/skill.py`

@@ -82,4 +82,4 @@ Open at least one poster and one metadata.json when verifying — don't just che
 
 ## pyskills twin
 
-`pyskills-bridge/infer_organize_ad/skill.py` (if present)
+`pyskills-bridge/infer_organize_ad/skill.py`

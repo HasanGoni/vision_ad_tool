@@ -53,6 +53,14 @@ bash .cursor/skills/verify-ad-pipeline/scripts/verify_nbdev.sh
 
 Same as `.github/workflows/test.yaml` (fastai/nbdev-ci). If you edited notebooks under `nbs/`, run `uv run nbdev-prepare` first so `be_vision_ad_tools/` is in sync.
 
+## VERIFY — read script output
+
+After each script, confirm pass criteria in the output — don't rely on exit code alone:
+
+- `verify_sync.sh` — sync completed without errors (`uv sync` or `pip install -e .` OK)
+- `verify_imports.sh` — all three entry surfaces imported (`flexible_trainer`, `unified_inference`, `anomaly_score_organizer`)
+- `verify_nbdev.sh` — `nbdev-test` reports passed (note the test count in the log)
+
 ## Preprocessing contract (group policy)
 
 When verifying changes that touch data loading or transforms, confirm these rules still hold:
@@ -61,6 +69,13 @@ When verifying changes that touch data loading or transforms, confirm these rule
 - **No silent PIL 16→8-bit conversion** — preserve bit depth intentionally
 - **No elastic deformation** — alters void/defect geometry
 - **Patch/stitch rules** — use `TilerConfigurationCallback` (not `TilingConfigurationCallback`)
+
+## What NOT to do
+
+- Don't claim "it works" without running all three verification scripts.
+- Don't skip reading script output — confirm imports and `nbdev-test` actually passed.
+- Don't invent other verification commands or bypass the scripts in `scripts/`.
+- Don't commit library changes under `be_vision_ad_tools/` or `nbs/` without verification.
 
 ## Only after all of this
 

@@ -95,4 +95,4 @@ Open at least one poster and confirm the checkpoint path matches training output
 
 ## pyskills twin
 
-`pyskills-bridge/full_ad/skill.py` (if present)
+`pyskills-bridge/full_ad/skill.py`

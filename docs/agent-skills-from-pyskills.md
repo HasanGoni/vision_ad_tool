@@ -291,7 +291,7 @@ Keep procedure in one place. Mirror names across both; don't maintain two diverg
 - **Demonstration:** concrete pytest count + images inspected + annotations valid
 - **pyskills twin:** `pyskills-bridge/verify_synthetic/skill.py` (optional, for Python-kernel agents)
 
-### vision_ad_tool — seven skills
+### vision_ad_tool — eight skills
 
 | Skill | Trigger | Hydra CLI | Key script |
 |-------|---------|-----------|------------|
@@ -302,6 +302,7 @@ Keep procedure in one place. Mirror names across both; don't maintain two diverg
 | `infer-organize-ad` | Infer + score buckets + posters | `vad-infer-organize` | `infer_organize.sh` |
 | `train-infer-ad` | Train + validation posters | `vad-train-infer` | `train_infer.sh` |
 | `full-ad-pipeline` | End-to-end train + test triage | `vad-full` | `full_pipeline.sh` |
+| `hyperparameter-search-ad` | Compare models / grid search | `vad-hyperparam-search` | `hyperparam_search.sh` |
 
 ---
 
