@@ -23,7 +23,7 @@ Do not invent other verification commands.
 Verified AD toolbox:
 - uv sync: OK
 - imports: flexible_trainer, unified_inference, anomaly_score_organizer
-- nbdev_test: passed
+- nbdev-test: passed
 - no uncommitted scratch in output_verify/
 ```
 
@@ -51,7 +51,7 @@ Confirms the three main entry surfaces import without error. No GPU training her
 bash .cursor/skills/verify-ad-pipeline/scripts/verify_nbdev.sh
 ```
 
-Same as `.github/workflows/test.yaml` (fastai/nbdev-ci). If you edited notebooks under `nbs/`, run `nbdev_prepare` first so `be_vision_ad_tools/` is in sync.
+Same as `.github/workflows/test.yaml` (fastai/nbdev-ci). If you edited notebooks under `nbs/`, run `uv run nbdev-prepare` first so `be_vision_ad_tools/` is in sync.
 
 ## Preprocessing contract (group policy)
 

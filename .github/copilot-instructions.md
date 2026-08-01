@@ -18,7 +18,7 @@ Report concretely, e.g.:
 Verified AD toolbox:
 - sync: OK
 - imports: flexible_trainer, unified_inference, anomaly_score_organizer
-- nbdev_test: passed
+- nbdev-test: passed
 ```
 
 ## Public API — use only these commands

@@ -121,8 +121,8 @@ Project metadata, dependencies, console scripts, and nbdev settings live in **`p
 
 ```bash
 uv sync
-nbdev_export    # notebooks → be_vision_ad_tools/
-nbdev_test      # CI tests
+uv run nbdev-export    # notebooks → be_vision_ad_tools/
+uv run nbdev-test      # CI tests
 ```
 
 ---
@@ -147,7 +147,7 @@ $ pip install -e .
 # ...
 
 # compile to have changes apply to vision_ad_tool
-$ nbdev_prepare
+$ uv run nbdev-prepare
 ```
 
 ## Usage

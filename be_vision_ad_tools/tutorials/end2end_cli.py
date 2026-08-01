@@ -8,57 +8,62 @@ Docs: https://HasanGoni.github.io/vision_ad_tool/tutorials.end2end_hydra_cli.htm
 __all__ = ['cfg_to_dict', 'run_train', 'run_infer', 'run_organize', 'run_infer_organize', 'run_train_infer', 'run_full',
            'train_cli', 'infer_cli', 'organize_cli', 'infer_organize_cli', 'train_infer_cli', 'full_cli']
 
-# %% ../../nbs/18_tutorials.end2end_hydra_cli.ipynb #03864840
+# %% ../../nbs/18_tutorials.end2end_hydra_cli.ipynb #06707618
 from pathlib import Path
 from typing import Any
 
 import hydra
 from omegaconf import DictConfig, OmegaConf
 
-from ..inference.anomaly_score_organizer import predict_and_organize_by_score
-from ..inference.unified_inference import unified_inference
-from ..inference.unified_with_threshold_posters import unified_inference_with_threshold_posters
-from ..training.flexible_trainer import FlexibleTrainingConfig, train_anomaly_model, run_inference_after_training
 
-
-# %% ../../nbs/18_tutorials.end2end_hydra_cli.ipynb #37e9bb3c
+# %% ../../nbs/18_tutorials.end2end_hydra_cli.ipynb #1610c2c0
 def cfg_to_dict(cfg: DictConfig) -> dict[str, Any]:
     """Convert a Hydra DictConfig to a plain dict with variables resolved."""
     return OmegaConf.to_container(cfg, resolve=True, throw_on_missing=True)  # type: ignore[return-value]
 
 
-# %% ../../nbs/18_tutorials.end2end_hydra_cli.ipynb #bf17ba28
+# %% ../../nbs/18_tutorials.end2end_hydra_cli.ipynb #7e471102
 def run_train(cfg: DictConfig) -> dict[str, Any]:
     """Train an anomaly-detection model."""
+    from be_vision_ad_tools.training.flexible_trainer import FlexibleTrainingConfig, train_anomaly_model
+
     params = cfg_to_dict(cfg)
     config = FlexibleTrainingConfig(**params)
     return train_anomaly_model(config)
 
 
-# %% ../../nbs/18_tutorials.end2end_hydra_cli.ipynb #98d3bf21
+# %% ../../nbs/18_tutorials.end2end_hydra_cli.ipynb #f7d1a3da
 def run_infer(cfg: DictConfig) -> dict[str, Any]:
     """Run unified inference on image folder(s) or list file."""
+    from be_vision_ad_tools.inference.unified_inference import unified_inference
+
     params = cfg_to_dict(cfg)
     return unified_inference(**params)
 
 
-# %% ../../nbs/18_tutorials.end2end_hydra_cli.ipynb #a19f9c7b
+# %% ../../nbs/18_tutorials.end2end_hydra_cli.ipynb #7a79aa41
 def run_organize(cfg: DictConfig) -> dict[str, Any]:
     """Predict anomaly scores and organize images into threshold folders."""
+    from be_vision_ad_tools.inference.anomaly_score_organizer import predict_and_organize_by_score
+
     params = cfg_to_dict(cfg)
     return predict_and_organize_by_score(**params)
 
 
-# %% ../../nbs/18_tutorials.end2end_hydra_cli.ipynb #1ca2d96d
+# %% ../../nbs/18_tutorials.end2end_hydra_cli.ipynb #ee6f4d67
 def run_infer_organize(cfg: DictConfig) -> dict[str, Any]:
     """Unified inference + threshold folders + optional posters."""
+    from be_vision_ad_tools.inference.unified_with_threshold_posters import unified_inference_with_threshold_posters
+
     params = cfg_to_dict(cfg)
     return unified_inference_with_threshold_posters(**params)
 
 
-# %% ../../nbs/18_tutorials.end2end_hydra_cli.ipynb #b3f511bc
+# %% ../../nbs/18_tutorials.end2end_hydra_cli.ipynb #65e2a366
 def run_train_infer(cfg: DictConfig) -> dict[str, Any]:
     """Train a model, then run inference/posters from training results."""
+    from be_vision_ad_tools.training.flexible_trainer import run_inference_after_training
+
     root = cfg_to_dict(cfg)
     train_params = root.get('train', root)
     infer_params = root.get('infer_after_training', {})
@@ -67,7 +72,7 @@ def run_train_infer(cfg: DictConfig) -> dict[str, Any]:
     return run_inference_after_training(training_results, **infer_params)
 
 
-# %% ../../nbs/18_tutorials.end2end_hydra_cli.ipynb #c772ddb3
+# %% ../../nbs/18_tutorials.end2end_hydra_cli.ipynb #db172dd1
 def run_full(cfg: DictConfig) -> dict[str, Any]:
     """Train, then run unified inference with threshold organization."""
     root = cfg_to_dict(cfg)
@@ -88,11 +93,11 @@ def run_full(cfg: DictConfig) -> dict[str, Any]:
     return run_infer_organize(OmegaConf.create(infer_params))
 
 
-# %% ../../nbs/18_tutorials.end2end_hydra_cli.ipynb #76b5fb5d
+# %% ../../nbs/18_tutorials.end2end_hydra_cli.ipynb #6c89e1f2
 _CONF = str(Path(__file__).resolve().parent / 'conf')
 
 
-# %% ../../nbs/18_tutorials.end2end_hydra_cli.ipynb #27614772
+# %% ../../nbs/18_tutorials.end2end_hydra_cli.ipynb #81979fa3
 @hydra.main(version_base=None, config_path=_CONF, config_name='train')
 def train_cli(cfg: DictConfig) -> None:
     """Train an anomaly-detection model."""
@@ -100,7 +105,7 @@ def train_cli(cfg: DictConfig) -> None:
     print(result)
 
 
-# %% ../../nbs/18_tutorials.end2end_hydra_cli.ipynb #f0f71082
+# %% ../../nbs/18_tutorials.end2end_hydra_cli.ipynb #c7db7877
 @hydra.main(version_base=None, config_path=_CONF, config_name='infer')
 def infer_cli(cfg: DictConfig) -> None:
     """Score images with unified inference."""
@@ -108,7 +113,7 @@ def infer_cli(cfg: DictConfig) -> None:
     print(result)
 
 
-# %% ../../nbs/18_tutorials.end2end_hydra_cli.ipynb #d057e7bf
+# %% ../../nbs/18_tutorials.end2end_hydra_cli.ipynb #32381246
 @hydra.main(version_base=None, config_path=_CONF, config_name='organize')
 def organize_cli(cfg: DictConfig) -> None:
     """Organize images by anomaly score."""
@@ -116,7 +121,7 @@ def organize_cli(cfg: DictConfig) -> None:
     print(result)
 
 
-# %% ../../nbs/18_tutorials.end2end_hydra_cli.ipynb #d588e24b
+# %% ../../nbs/18_tutorials.end2end_hydra_cli.ipynb #4c673268
 @hydra.main(version_base=None, config_path=_CONF, config_name='infer_organize')
 def infer_organize_cli(cfg: DictConfig) -> None:
     """Inference + threshold folders + posters."""
@@ -124,7 +129,7 @@ def infer_organize_cli(cfg: DictConfig) -> None:
     print(result)
 
 
-# %% ../../nbs/18_tutorials.end2end_hydra_cli.ipynb #2cdf315f
+# %% ../../nbs/18_tutorials.end2end_hydra_cli.ipynb #cc6c00c2
 @hydra.main(version_base=None, config_path=_CONF, config_name='train_infer')
 def train_infer_cli(cfg: DictConfig) -> None:
     """Train, then inference/posters from training results."""
@@ -132,7 +137,7 @@ def train_infer_cli(cfg: DictConfig) -> None:
     print(result)
 
 
-# %% ../../nbs/18_tutorials.end2end_hydra_cli.ipynb #8828ee7a
+# %% ../../nbs/18_tutorials.end2end_hydra_cli.ipynb #84570c77
 @hydra.main(version_base=None, config_path=_CONF, config_name='full')
 def full_cli(cfg: DictConfig) -> None:
     """Train, then unified inference with threshold organization."""

@@ -10,13 +10,13 @@ This directory keeps thin re-exports for backward compatibility (`tutorials.end2
 
 | CLI | Config | Library function |
 |-----|--------|------------------|
-| `vad-train` | `conf/train.yaml` | `train_anomaly_model` |
-| `vad-infer` | `conf/infer.yaml` | `unified_inference` |
-| `vad-organize` | `conf/organize.yaml` | `predict_and_organize_by_score` |
-| `vad-infer-organize` | `conf/infer_organize.yaml` | `unified_inference_with_threshold_posters` |
-| `vad-train-infer` | `conf/train_infer.yaml` | train + `run_inference_after_training` |
-| `vad-full` | `conf/full.yaml` | train + infer-organize pipeline |
-| `vad-hyperparam-search` | `conf/hyperparam_search.yaml` | `diff_parameter_and_save_poster` |
+| `vad-train` | `be_vision_ad_tools/tutorials/conf/train.yaml` | `train_anomaly_model` |
+| `vad-infer` | `be_vision_ad_tools/tutorials/conf/infer.yaml` | `unified_inference` |
+| `vad-organize` | `be_vision_ad_tools/tutorials/conf/organize.yaml` | `predict_and_organize_by_score` |
+| `vad-infer-organize` | `be_vision_ad_tools/tutorials/conf/infer_organize.yaml` | `unified_inference_with_threshold_posters` |
+| `vad-train-infer` | `be_vision_ad_tools/tutorials/conf/train_infer.yaml` | train + `run_inference_after_training` |
+| `vad-full` | `be_vision_ad_tools/tutorials/conf/full.yaml` | train + infer-organize pipeline |
+| `vad-hyperparam-search` | `be_vision_ad_tools/tutorials/conf/hyperparam_search.yaml` | `diff_parameter_and_save_poster` |
 
 ```bash
 uv sync
