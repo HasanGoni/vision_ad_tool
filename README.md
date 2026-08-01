@@ -37,6 +37,13 @@ Open this repo in Cursor. Skills live at:
 ├── train-infer-ad/          # vad-train-infer — train + validation posters
 ├── full-ad-pipeline/        # vad-full — train + infer-organize end-to-end
 └── hyperparameter-search-ad/ # vad-hyperparam-search — grid search + poster
+├── submit-train-ad-hpc/       # vad-train-submit — queue training via bsub
+├── submit-infer-ad-hpc/       # vad-infer-submit
+├── submit-organize-ad-hpc/    # vad-organize-submit
+├── submit-infer-organize-ad-hpc/
+├── submit-train-infer-ad-hpc/
+├── submit-full-ad-hpc/
+└── submit-hyperparam-search-ad-hpc/
 ```
 
 | Skill | Hydra CLI | Primary trigger |
@@ -49,6 +56,13 @@ Open this repo in Cursor. Skills live at:
 | `train-infer-ad` | `vad-train-infer` | Train + validation posters in one step |
 | `full-ad-pipeline` | `vad-full` | End-to-end train + test triage |
 | `hyperparameter-search-ad` | `vad-hyperparam-search` | Grid search + comparison poster |
+| `submit-train-ad-hpc` | `vad-train-submit` | Queue training on office HPC (bsub) |
+| `submit-infer-ad-hpc` | `vad-infer-submit` | Queue inference on HPC |
+| `submit-organize-ad-hpc` | `vad-organize-submit` | Queue score triage on HPC |
+| `submit-infer-organize-ad-hpc` | `vad-infer-organize-submit` | Queue infer-organize on HPC |
+| `submit-train-infer-ad-hpc` | `vad-train-infer-submit` | Queue train-infer on HPC |
+| `submit-full-ad-hpc` | `vad-full-submit` | Queue full pipeline on HPC |
+| `submit-hyperparam-search-ad-hpc` | `vad-hyperparam-search-submit` | Queue hyperparam search on HPC |
 
 Each folder has `SKILL.md` + `scripts/`. Cursor matches skills from the YAML `description:` when your task fits.
 
@@ -112,6 +126,27 @@ vad-hyperparam-search data_root=/path/data test_images=/path/test
 ```
 
 Configs: `be_vision_ad_tools/tutorials/conf/*.yaml` — override any field on the CLI.
+
+### HPC submit CLIs (office cluster via bsub)
+
+Each local CLI has a companion `vad-*-submit` that submits the same workflow to LSF via `bsub`. Same Hydra overrides plus `hpc.*` (`queue`, `cores`, `memory_mb`, `walltime_minutes`, `job_name`, `log_dir`). Use `hpc.dry_run=true` to preview without a cluster.
+
+| Submit command | Runs on cluster |
+|----------------|-----------------|
+| `vad-train-submit` | `vad-train` |
+| `vad-infer-submit` | `vad-infer` |
+| `vad-organize-submit` | `vad-organize` |
+| `vad-infer-organize-submit` | `vad-infer-organize` |
+| `vad-train-infer-submit` | `vad-train-infer` |
+| `vad-full-submit` | `vad-full` |
+| `vad-hyperparam-search-submit` | `vad-hyperparam-search` |
+
+```bash
+vad-train-submit data_root=/path/to/data model_name=patchcore hpc.queue=batch hpc.cores=8
+vad-train-submit data_root=/path/to/data hpc.dry_run=true   # preview bsub command locally
+```
+
+HPC configs: `be_vision_ad_tools/tutorials/conf/hpc/submit_defaults.yaml`, `*_submit.yaml`. nbdev: `nbs/20_tutorials.hpc_submit_cli.ipynb`.
 
 Legacy shim: `tutorials/end2end_tutorial/` re-exports from `be_vision_ad_tools.tutorials.end2end_cli`.
 

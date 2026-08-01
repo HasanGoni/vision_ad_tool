@@ -1,0 +1,9 @@
+# @package _global_
+defaults:
+  - train_infer
+  - hpc/submit_defaults
+  - _self_
+
+hpc:
+  job_name: vad-train-infer
+  local_cli: vad-train-infer

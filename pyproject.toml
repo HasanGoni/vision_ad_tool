@@ -61,6 +61,13 @@ vad-infer-organize = "be_vision_ad_tools.tutorials.end2end_cli:infer_organize_cl
 vad-train-infer = "be_vision_ad_tools.tutorials.end2end_cli:train_infer_cli"
 vad-full = "be_vision_ad_tools.tutorials.end2end_cli:full_cli"
 vad-hyperparam-search = "be_vision_ad_tools.training.hyperparameter_hydra_cli:hyperparam_search_cli"
+vad-train-submit = "be_vision_ad_tools.tutorials.hpc_submit_cli:train_submit_cli"
+vad-infer-submit = "be_vision_ad_tools.tutorials.hpc_submit_cli:infer_submit_cli"
+vad-organize-submit = "be_vision_ad_tools.tutorials.hpc_submit_cli:organize_submit_cli"
+vad-infer-organize-submit = "be_vision_ad_tools.tutorials.hpc_submit_cli:infer_organize_submit_cli"
+vad-train-infer-submit = "be_vision_ad_tools.tutorials.hpc_submit_cli:train_infer_submit_cli"
+vad-full-submit = "be_vision_ad_tools.tutorials.hpc_submit_cli:full_submit_cli"
+vad-hyperparam-search-submit = "be_vision_ad_tools.tutorials.hpc_submit_cli:hyperparam_search_submit_cli"
 
 [project.entry-points.nbdev]
 vision_ad_tool = "be_vision_ad_tools._modidx:d"
@@ -69,7 +76,7 @@ vision_ad_tool = "be_vision_ad_tools._modidx:d"
 include = ["be_vision_ad_tools*", "tutorials*"]
 
 [tool.setuptools.package-data]
-"be_vision_ad_tools.tutorials" = ["conf/*.yaml"]
+"be_vision_ad_tools.tutorials" = ["conf/*.yaml", "conf/hpc/*.yaml"]
 
 [tool.nbdev]
 lib_path = "be_vision_ad_tools"

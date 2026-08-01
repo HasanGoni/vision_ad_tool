@@ -1,0 +1,19 @@
+# @package hpc
+# Shared HPC / LSF bsub defaults for vad-*-submit CLIs (override per job via Hydra)
+
+queue: batch
+cores: 4
+memory_mb: 8000
+walltime_minutes: 240
+job_name: vad-job
+log_dir: ./hpc_logs
+stdout_suffix: .out
+stderr_suffix: .err
+use_gpu: false
+resource_select: "ui=aiml_batch_training_dy && um=background && osrel>=70"
+gpu_resource_select: "osrel>=70 && type=any"
+gpu_spec: "num=1:j_exclusive=yes"
+dry_run: false
+local_cli: null
+project_root: null
+run_prefix: null

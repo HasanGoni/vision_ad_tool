@@ -303,6 +303,13 @@ Keep procedure in one place. Mirror names across both; don't maintain two diverg
 | `train-infer-ad` | Train + validation posters | `vad-train-infer` | `train_infer.sh` |
 | `full-ad-pipeline` | End-to-end train + test triage | `vad-full` | `full_pipeline.sh` |
 | `hyperparameter-search-ad` | Compare models / grid search | `vad-hyperparam-search` | `hyperparam_search.sh` |
+| `submit-train-ad-hpc` | Queue training on office HPC | `vad-train-submit` | `submit_train.sh` |
+| `submit-infer-ad-hpc` | Queue inference on office HPC | `vad-infer-submit` | `submit_infer.sh` |
+| `submit-organize-ad-hpc` | Queue score triage on HPC | `vad-organize-submit` | `submit_organize.sh` |
+| `submit-infer-organize-ad-hpc` | Queue infer-organize on HPC | `vad-infer-organize-submit` | `submit_infer_organize.sh` |
+| `submit-train-infer-ad-hpc` | Queue train-infer on HPC | `vad-train-infer-submit` | `submit_train_infer.sh` |
+| `submit-full-ad-hpc` | Queue full pipeline on HPC | `vad-full-submit` | `submit_full.sh` |
+| `submit-hyperparam-search-ad-hpc` | Queue hyperparam search on HPC | `vad-hyperparam-search-submit` | `submit_hyperparam_search.sh` |
 
 ---
 

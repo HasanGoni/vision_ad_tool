@@ -18,6 +18,13 @@ dependencies = ["pyskills"]
 "train_infer_ad.skill" = "train_infer_ad.skill"
 "full_ad.skill" = "full_ad.skill"
 "hyperparameter_search_ad.skill" = "hyperparameter_search_ad.skill"
+"submit_train_ad_hpc.skill" = "submit_train_ad_hpc.skill"
+"submit_infer_ad_hpc.skill" = "submit_infer_ad_hpc.skill"
+"submit_organize_ad_hpc.skill" = "submit_organize_ad_hpc.skill"
+"submit_infer_organize_ad_hpc.skill" = "submit_infer_organize_ad_hpc.skill"
+"submit_train_infer_ad_hpc.skill" = "submit_train_infer_ad_hpc.skill"
+"submit_full_ad_hpc.skill" = "submit_full_ad_hpc.skill"
+"submit_hyperparam_search_ad_hpc.skill" = "submit_hyperparam_search_ad_hpc.skill"
 
 [tool.setuptools.packages.find]
-include = ["verify_ad*", "train_ad*", "infer_ad*", "organize_ad*", "infer_organize_ad*", "train_infer_ad*", "full_ad*", "hyperparameter_search_ad*"]
+include = ["verify_ad*", "train_ad*", "infer_ad*", "organize_ad*", "infer_organize_ad*", "train_infer_ad*", "full_ad*", "hyperparameter_search_ad*", "submit_train_ad_hpc*", "submit_infer_ad_hpc*", "submit_organize_ad_hpc*", "submit_infer_organize_ad_hpc*", "submit_train_infer_ad_hpc*", "submit_full_ad_hpc*", "submit_hyperparam_search_ad_hpc*"]

@@ -1,0 +1,9 @@
+# @package _global_
+defaults:
+  - organize
+  - hpc/submit_defaults
+  - _self_
+
+hpc:
+  job_name: vad-organize
+  local_cli: vad-organize
