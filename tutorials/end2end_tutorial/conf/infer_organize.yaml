@@ -1,0 +1,28 @@
+# @package _global_
+# Inference + threshold organization + posters (unified_inference_with_threshold_posters)
+
+model_path: ???
+test_folders: ???
+output_dir: null
+execution_mode: auto
+batch_size: 100
+num_nodes: 10
+num_workers: null
+score_thresholds:
+  - 0.3
+  - 0.4
+  - 0.5
+  - 0.6
+  - 0.7
+  - 0.8
+  - 0.9
+  - 1.0
+create_posters: true
+images_per_poster: 20
+image_size:
+  - 224
+  - 224
+grid_cols: 5
+save_heatmaps: false
+heatmap_style: side_by_side
+copy_mode: true

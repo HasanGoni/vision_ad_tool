@@ -12,7 +12,7 @@ __all__ = ['save_image_with_metadata', 'determine_score_folder', 'normalize_scor
            'get_poster_row_col', 'create_test_image_with_block', 'create_poster_figure', 'set_poster_title',
            'find_image_index_in_dataframe', 'load_and_prepare_image', 'display_image_on_axis', 'display_error_on_axis',
            'hide_empty_grid_cells', 'save_poster_figure', 'create_poster_from_folder', 'print_poster_creation_summary',
-           'predict_and_organize_by_score']
+           'create_posters_for_score_folders', 'predict_and_organize_by_score']
 
 # %% ../../nbs/14_inference.anomaly_score_organizer.ipynb 4
 import os
@@ -1022,6 +1022,51 @@ def print_poster_creation_summary(
     print("\n✅ Poster creation complete!")
     print(f"   Total folders processed: {len(poster_paths)}")
     print(f"   Total posters created: {sum(len(p) for p in poster_paths.values())}")
+
+# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb 175
+def create_posters_for_score_folders(
+    output_dir: Union[str, Path],
+    image_index_df: pd.DataFrame,
+    score_thresholds: List[float],
+    images_per_poster: int = 20,
+    image_size: Tuple[int, int] = (224, 224),
+    grid_cols: int = 5,
+    annotate_with_index: bool = True,
+    font_size: int = 30,
+) -> Dict[str, List[Path]]:
+    """Create indexed posters for each score-threshold folder under `output_dir`."""
+    output_dir = Path(output_dir)
+    poster_paths: Dict[str, List[Path]] = {}
+    sorted_thresholds = normalize_score_thresholds(score_thresholds)
+    image_dirs = [p for p in output_dir.iterdir() if p.is_dir() and p.name != 'posters']
+    if not image_dirs:
+        print(f"⚠️  No image folders found under {output_dir}")
+        return poster_paths
+
+    print("\n🖼️  CREATING POSTERS FOR SCORE FOLDERS")
+    print("=" * 70)
+
+    for image_dir in image_dirs:
+        for threshold in sorted_thresholds:
+            folder_path = image_dir / str(threshold)
+            if not folder_path.exists():
+                continue
+            paths = create_poster_from_folder(
+                folder_path=folder_path,
+                image_index_df=image_index_df,
+                output_path=output_dir / 'posters' / image_dir.name / str(threshold),
+                images_per_poster=images_per_poster,
+                image_size=image_size,
+                grid_cols=grid_cols,
+                annotate_with_index=annotate_with_index,
+                font_size=font_size,
+                title=f'{image_dir.name}_{threshold}',
+            )
+            if paths:
+                poster_paths[f'{image_dir.name}/{threshold}'] = paths
+
+    print_poster_creation_summary(poster_paths)
+    return poster_paths
 
 # %% ../../nbs/14_inference.anomaly_score_organizer.ipynb 198
 def predict_and_organize_by_score(

@@ -26,12 +26,12 @@ from fastcore.test import *
 
 # %% ../../nbs/15_inference.unified_with_threshold_posters.ipynb 5
 # Import from existing modules
-from vision_ad_tool.inference.prediction_system import (
+from be_vision_ad_tools.inference.prediction_system import (
     predict_image_list_from_file_enhanced,
     predict_image_list
 )
 
-from vision_ad_tool.inference.multinode_inference import (
+from be_vision_ad_tools.inference.multinode_inference import (
     create_smart_batches,
     scan_folder_structure,
     create_batch_list_file,
@@ -39,13 +39,13 @@ from vision_ad_tool.inference.multinode_inference import (
     distribute_folder_inference
 )
 
-from vision_ad_tool.inference.anomaly_score_organizer import (
+from be_vision_ad_tools.inference.anomaly_score_organizer import (
     create_image_index_dataframe,
     organize_images_by_score,
     create_posters_for_score_folders
 )
 
-from vision_ad_tool.inference.unified_inference import (
+from be_vision_ad_tools.inference.unified_inference import (
     in_jupyter_notebook,
     has_bsub_command,
     detect_execution_environment,

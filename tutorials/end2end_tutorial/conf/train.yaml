@@ -1,0 +1,22 @@
+# @package _global_
+# Train an anomaly-detection model (FlexibleTrainingConfig / train_anomaly_model)
+
+data_root: ???
+class_name: anomaly_detection
+normal_dir: good
+abnormal_dir: bad
+model_name: padim
+backbone: resnet18
+n_features: 100
+layers:
+  - layer1
+  - layer2
+  - layer3
+max_epochs: 100
+save_path: ./models
+seed: null
+enable_tiling: false
+tile_size: null
+stride: null
+export_formats:
+  - torch

@@ -1,9 +1,25 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
 [project]
-name="vision_ad_tool"
+name = "vision_ad_tool"
 version = "0.1.0"
-description = "Add your description here"
+description = "Anomaly detection for images"
 readme = "README.md"
-requires-python=">=3.12"
+requires-python = ">=3.12"
+license = { text = "Apache-2.0" }
+authors = [
+    { name = "Goni Mohammed Hasan (BE DMR AI DSE)", email = "mohammedhasan.goni@infineon.com" },
+]
+keywords = ["nbdev", "jupyter", "notebook", "anomaly-detection", "anomalib"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "License :: OSI Approved :: Apache Software License",
+]
 dependencies = [
     "anomalib<2",
     "cloudpickle>=3.1.2",
@@ -12,14 +28,16 @@ dependencies = [
     "einops>=0.8.1",
     "fastcore>=1.8.13",
     "freia>=0.2",
+    "hydra-core>=1.3.0",
     "imgaug>=0.4.0",
     "ipykernel==6.30.1",
     "jupyter>=1.1.1",
     "kornia>=0.8.1",
     "lightning>=2.5.5",
     "matplotlib>=3.10.7",
-    "nbdev>=2.4.6",
+    "nbdev>=3.0.0",
     "numpy<2",
+    "omegaconf>=2.3.0",
     "open-clip-torch>=3.2.0",
     "opencv-python>=4.11.0.86",
     "pandas>=2.3.3",
@@ -31,6 +49,47 @@ dependencies = [
     "watermark>=2.6.0",
 ]
 
-#[[tool.uv.index]]
-#url = "https://artifactory.intra.infineon.com/artifactory/api/pypi/pypi-pypi-org/simple"
-#default = true
+[project.urls]
+Repository = "https://github.com/HasanGoni/vision_ad_tool"
+Documentation = "https://HasanGoni.github.io/vision_ad_tool/"
+
+[project.scripts]
+vad-train = "tutorials.end2end_tutorial.cli:train_cli"
+vad-infer = "tutorials.end2end_tutorial.cli:infer_cli"
+vad-organize = "tutorials.end2end_tutorial.cli:organize_cli"
+vad-infer-organize = "tutorials.end2end_tutorial.cli:infer_organize_cli"
+vad-train-infer = "tutorials.end2end_tutorial.cli:train_infer_cli"
+vad-full = "tutorials.end2end_tutorial.cli:full_cli"
+
+[project.entry-points.nbdev]
+vision_ad_tool = "be_vision_ad_tools._modidx:d"
+
+[tool.setuptools.packages.find]
+include = ["be_vision_ad_tools*", "tutorials*"]
+
+[tool.setuptools.package-data]
+"tutorials.end2end_tutorial" = ["conf/*.yaml"]
+
+[tool.nbdev]
+lib_path = "be_vision_ad_tools"
+nbs_path = "nbs"
+doc_path = "_docs"
+branch = "main"
+user = "HasanGoni"
+repo = "vision_ad_tool"
+custom_sidebar = false
+recursive = true
+tst_flags = "notest"
+put_version_in_init = true
+update_pyproject = true
+doc_host = "https://HasanGoni.github.io"
+doc_baseurl = "/vision_ad_tool"
+git_url = "https://github.com/HasanGoni/vision_ad_tool"
+title = "vision_ad_tool"
+
+[tool.uv.extra-build-dependencies]
+vision-ad-tool = ["setuptools>=64"]
+
+# [[tool.uv.index]]
+# url = "https://artifactory.intra.infineon.com/artifactory/api/pypi/pypi-pypi-org/simple"
+# default = true
