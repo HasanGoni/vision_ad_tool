@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.12"
 license = { text = "Apache-2.0" }
 authors = [
-    { name = "Goni Mohammed Hasan (BE DMR AI DSE)", email = "mohammedhasan.goni@infineon.com" },
+    { name = "Goni Mohammed Hasan", email = "hasanme1412@gmail.com" },
 ]
 keywords = ["nbdev", "jupyter", "notebook", "anomaly-detection", "anomalib"]
 classifiers = [
@@ -98,6 +98,3 @@ title = "vision_ad_tool"
 [tool.uv.extra-build-dependencies]
 vision-ad-tool = ["setuptools>=64"]
 
-# [[tool.uv.index]]
-# url = "https://artifactory.intra.infineon.com/artifactory/api/pypi/pypi-pypi-org/simple"
-# default = true
