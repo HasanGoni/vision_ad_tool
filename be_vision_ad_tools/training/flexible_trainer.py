@@ -462,32 +462,6 @@ def get_model_configs(
     )
     return [padim_config, patchcore_config]
 
-# %% ../../nbs/04_training.flexible_anomaly_trainer.ipynb #e8f85cb0
-def _extract_model_inference_info(
-    model # Model could be trained or exported model
-    ) -> Dict[str, Any]:
-    """Extract threshold and pixel statistics from trained model for inference.
-    """
-    if not hasattr(model, 'image_threshold') or not hasattr(model, 'pixel_threshold'):
-        raise AttributeError("Model missing required threshold attributes. Ensure model is properly trained.")
-    
-    if not hasattr(model, 'normalization_metrics'):
-        raise RuntimeError("Model normalization metrics not available. Model may not be fitted yet.")
-    
-    try:
-        inference_info = {
-            'image_threshold': float(model.image_threshold.value.item()) if hasattr(model.image_threshold.value, 'item') else float(model.image_threshold.value),
-            'pixel_threshold': float(model.pixel_threshold.value.item()) if hasattr(model.pixel_threshold.value, 'item') else float(model.pixel_threshold.value),
-            'pred_score_min': float(model.normalization_metrics.pred_scores.min.item()) if hasattr(model.normalization_metrics.pred_scores.min, 'item') else float(model.normalization_metrics.pred_scores.min),
-            'pred_score_max': float(model.normalization_metrics.pred_scores.max.item()) if hasattr(model.normalization_metrics.pred_scores.max, 'item') else float(model.normalization_metrics.pred_scores.max),
-            'anomaly_map_min': float(model.normalization_metrics.anomaly_maps.min.item()) if hasattr(model.normalization_metrics.anomaly_maps.min, 'item') else float(model.normalization_metrics.anomaly_maps.min),
-            'anomaly_map_max': float(model.normalization_metrics.anomaly_maps.max.item()) if hasattr(model.normalization_metrics.anomaly_maps.max, 'item') else float(model.normalization_metrics.anomaly_maps.max)
-        }
-    except (AttributeError, TypeError) as e:
-        raise RuntimeError(f"Failed to extract inference info from model: {e}")
-    
-    return inference_info
-
 # %% ../../nbs/04_training.flexible_anomaly_trainer.ipynb #6685eead
 def train_anomaly_model(
     config: Union[FlexibleTrainingConfig, Dict[str, Any], str, Path]
