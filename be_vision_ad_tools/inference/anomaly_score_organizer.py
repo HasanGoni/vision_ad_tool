@@ -16,7 +16,7 @@ __all__ = ['save_image_with_metadata', 'determine_score_folder', 'normalize_scor
            'hide_empty_grid_cells', 'save_poster_figure', 'create_poster_from_folder', 'print_poster_creation_summary',
            'create_posters_for_score_folders', 'predict_and_organize_by_score']
 
-# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #35264dea
+# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #6a328146
 import os
 import json
 import shutil
@@ -36,7 +36,7 @@ from functools import lru_cache
 from fastcore.all import *
 from fastcore.test import *
 
-# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #5f1ab57b
+# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #4721012f
 def save_image_with_metadata(
     image: Image.Image,  # PIL Image to save
     output_path: Union[str, Path],  # Output path
@@ -79,7 +79,7 @@ def save_image_with_metadata(
     return output_path
 
 
-# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #d4f3c823
+# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #f1812549
 # Import from existing modules
 from be_vision_ad_tools.inference.prediction_system import (
     predict_image_list_from_file_enhanced,
@@ -92,7 +92,7 @@ from be_vision_ad_tools.inference.multinode_inference import (
     create_batch_list_file
 )
 
-# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #4252e9d0
+# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #3231bee3
 def determine_score_folder(
     anomaly_score: float,  # Anomaly score (0.0 to 1.0)
     score_thresholds: List[float]  # List of score thresholds (e.g., [0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
@@ -115,7 +115,7 @@ def determine_score_folder(
     # If score exceeds all thresholds, use the last one
     return str(sorted_thresholds[-1])
 
-# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #3f14a141
+# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #5492cb1c
 def normalize_score_thresholds(
     score_thresholds: Optional[List[float]]  # List of score thresholds or None
 ) -> List[float]:  # Returns sorted list of thresholds
@@ -129,7 +129,7 @@ def normalize_score_thresholds(
     return sorted(score_thresholds)
 
 
-# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #7c344ef1
+# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #3ac06965
 def get_image_parent_folder(
     image_path: Union[str, Path]  # Path to the image
 ) -> str:  # Returns parent folder name
@@ -141,7 +141,7 @@ def get_image_parent_folder(
     return Path(image_path).parent.name
 
 
-# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #41df80cc
+# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #e2dcab38
 def build_target_folder_path(
     output_dir: Path,  # Base output directory
     parent_folder: str,  # Parent folder name from image path
@@ -155,7 +155,7 @@ def build_target_folder_path(
     return Path(output_dir, parent_folder, folder_name)
 
 
-# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #2bc1de8e
+# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #ea55a137
 def copy_or_move_file(
     source_path: Union[str, Path],  # Source file path
     dest_path: Union[str, Path],    # Destination file path
@@ -181,7 +181,7 @@ def copy_or_move_file(
         shutil.move(str(source_path), str(dest_path))
 
 
-# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #5e54e5ac
+# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #92b967b3
 def validate_prediction_result(
     result: Dict[str, Any]  # Prediction result dictionary
 ) -> Tuple[Optional[str], Optional[float], Optional[str]]:  # Returns (image_path, anomaly_score, saved_path) or (None, None, None) if invalid
@@ -199,7 +199,7 @@ def validate_prediction_result(
     return saved_path, anomaly_score,image_path
 
 
-# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #fb225452
+# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #53f101e9
 def save_image_by_score(
     heatmap_path: Union[str, Path],  # Path to the source image
 	image_path: Union[str, Path],  # Path to the source image
@@ -247,7 +247,7 @@ def save_image_by_score(
 
     return dest_path
 
-# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #be26d8a6
+# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #8c50fae9
 def process_single_image_result(
     result: Dict[str, Any],            # Prediction result dictionary
     output_dir: Path,                  # Base output directory
@@ -291,7 +291,7 @@ def process_single_image_result(
         print(f"❌ Error processing {image_path}: {e}")
         return None
 
-# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #e5450d6c
+# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #e390953c
 def annotate_image_with_index(
     image: Union[Image.Image, np.ndarray],  # PIL Image or numpy array
     index: int,  # Index number to display
@@ -366,7 +366,7 @@ def annotate_image_with_index(
     # Convert back to RGB (if original was RGB)
     return result.convert("RGB")
 
-# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #9c5e3bae
+# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #53204682
 def create_score_folders(
     output_dir: Path,  # Base output directory
     score_thresholds: List[float],  # List of score thresholds
@@ -393,7 +393,7 @@ def create_score_folders(
 
     return folder_map
 
-# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #9dbb6af9
+# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #ac87ff67
 def initialize_folder_stats(
     score_thresholds: List[float]  # List of score thresholds
 ) -> Dict[str, Dict[str, Any]]:  # Returns initialized stats dictionary
@@ -405,7 +405,7 @@ def initialize_folder_stats(
     return {str(t): {'count': 0, 'images': [], 'scores': []} for t in score_thresholds}
 
 
-# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #971d3a84
+# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #2ce7ace6
 def update_folder_stats(
     folder_stats: Dict[str, Dict[str, Any]],  # Folder statistics dictionary
     folder_name: str,  # Folder name
@@ -419,7 +419,7 @@ def update_folder_stats(
     folder_stats[folder_name]['images'].append(dest_path)
     folder_stats[folder_name]['scores'].append(anomaly_score)
 
-# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #c85ad472
+# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #c7a422e8
 def print_organization_summary(
     score_thresholds: List[float],  # List of score thresholds
     folder_stats: Dict[str, Dict[str, Any]],  # Folder statistics dictionary
@@ -462,7 +462,7 @@ def print_organization_summary(
         print(f"Folder '{folder_name}' ({score_range_str}): Count = {count}, Avg Score = {avg_score:.4f}")
 
 
-# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #1982fb4c
+# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #c3fc4361
 def build_organization_stats(
     output_dir: Path,  # Base output directory
     score_thresholds: List[float],  # List of score thresholds
@@ -493,7 +493,7 @@ def build_organization_stats(
     }
 
 
-# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #08df5fac
+# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #01d8d56a
 def save_all_folder_metadata(
     folder_stats: Dict[str, Dict[str, Any]],  # Folder statistics dictionary
     folder_map: Dict[str, Path]  # Map of folder names to their paths
@@ -539,7 +539,7 @@ def save_all_folder_metadata(
             logger.error(f"Failed to save metadata for folder '{folder_name}': {e}")
 
 
-# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #59a87512
+# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #1e24012a
 def organize_images_by_score(
     prediction_results: List[Dict[str, Any]],  # List of prediction results from predict_image_list
     output_dir: Union[str, Path],  # Base output directory
@@ -620,7 +620,7 @@ def organize_images_by_score(
         len(prediction_results) - failed_count, failed_count
     )
 
-# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #5bb43375
+# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #b0d2bf07
 def create_image_index_dataframe(
     image_list: Union[List[Union[str, Path]], str, Path]  # List of images or path to text file
 ) -> pd.DataFrame:  # Returns dataframe with index and image paths
@@ -658,7 +658,7 @@ def create_image_index_dataframe(
 
     return df
 
-# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #0ae3621b
+# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #0ec0128b
 def load_image_fast(
 	image_path: Union[str, Path], # path to the image
 	cache: bool = True, # whether to cache the image
@@ -675,7 +675,7 @@ def load_image_fast(
 
 
 
-# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #438b7ca7
+# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #4c6f8516
 @lru_cache(maxsize=1000)
 def _load_image_cached(image_path_str: Path) -> Image.Image:
 	"""
@@ -684,7 +684,7 @@ def _load_image_cached(image_path_str: Path) -> Image.Image:
 	return Image.open(image_path_str).convert('RGB')
 
 
-# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #c496b899
+# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #af5b3b05
 def get_images_from_score_folder(
 	path: Union[str, Path], # path to the score folder
 )->List[Path]:
@@ -701,7 +701,7 @@ def get_images_from_score_folder(
 
 
 
-# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #da0c2a35
+# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #6b8cfaaa
 def calculate_num_posters_needed(
 	num_images: int, # number of images in the folder
 	images_per_poster: int, # number of images per poster
@@ -711,7 +711,7 @@ def calculate_num_posters_needed(
 	"""
 	return int(np.ceil(num_images/images_per_poster))
 
-# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #cfdec885
+# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #cea06569
 def get_poster_image_subset(
 	im_list: List[Path], # list of image paths
 	poster_idx: int, # index of the poster (starts at 0)
@@ -727,7 +727,7 @@ def get_poster_image_subset(
 
 
 
-# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #6d93a21f
+# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #f1146de1
 def get_poster_row_col(
 	num_images: int, # number of images in the folder
 	poster_cols: int, # number of columns in the poster
@@ -739,7 +739,7 @@ def get_poster_row_col(
 	return r_no, poster_cols
 
 
-# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #029d5cf6
+# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #529becd8
 def create_test_image_with_block(
     img_width: int,  # Width of the image
     img_height: int, # Height of the image
@@ -768,7 +768,7 @@ def create_test_image_with_block(
     return test_pil_image if not open_cv else test_image_array
 
 
-# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #df7ab09f
+# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #59d9f906
 def create_poster_figure(
     grid_rows: int,  # Number of rows in the grid
     grid_cols: int,  # Number of columns in the grid
@@ -794,7 +794,7 @@ def create_poster_figure(
 
     return fig, axes
 
-# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #01edc537
+# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #0e75e0f0
 def set_poster_title(
     fig: plt.Figure,  # Matplotlib figure
     title: Optional[str],  # Title text (optional)
@@ -807,7 +807,7 @@ def set_poster_title(
     if title:
         fig.suptitle(f"{title} - Poster {poster_index + 1}", fontsize=14, weight='bold')
 
-# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #2beb6b32
+# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #9e4896ef
 def find_image_index_in_dataframe(
     image_name: str,  # Name of the image file
     df: pd.DataFrame  # DataFrame with image indices
@@ -820,7 +820,7 @@ def find_image_index_in_dataframe(
 
 
 
-# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #ac573470
+# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #eaeac638
 def load_and_prepare_image(
     img_path: Path,  # Path to the image file
     image_size: Tuple[int, int],  # Target size for the image
@@ -844,7 +844,7 @@ def load_and_prepare_image(
 
     return img
 
-# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #d8fcff42
+# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #fe107c85
 def display_image_on_axis(
     ax: plt.Axes,  # Matplotlib axis
     img: Image.Image,  # PIL Image to display
@@ -871,7 +871,7 @@ def display_error_on_axis(
            fontsize=8, color='red')
     ax.axis('off')
 
-# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #8e00b457
+# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #742d6cf0
 def hide_empty_grid_cells(
     axes: List[List[plt.Axes]],  # 2D array of axes
     num_images: int,  # Number of images actually displayed
@@ -887,7 +887,7 @@ def hide_empty_grid_cells(
         col = idx % grid_cols
         axes[row][col].axis('off')
 
-# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #4039bd0a
+# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #9c534308
 def save_poster_figure(
     fig: plt.Figure,  # Matplotlib figure
     output_path: Path  # Path to save the poster
@@ -902,7 +902,7 @@ def save_poster_figure(
     plt.close()
     return output_path
 
-# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #9b114938
+# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #76ee20f8
 def create_poster_from_folder(
     folder_path: Union[str, Path],  # Folder containing images
     image_index_df: pd.DataFrame,  # DataFrame with image indices
@@ -1013,7 +1013,7 @@ def create_poster_from_folder(
 
     return saved_paths
 
-# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #4875a66f
+# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #1362de66
 def print_poster_creation_summary(
     poster_paths: Dict[str, List[Path]]  # Dictionary mapping folder names to poster paths
 ) -> None:
@@ -1025,7 +1025,7 @@ def print_poster_creation_summary(
     print(f"   Total folders processed: {len(poster_paths)}")
     print(f"   Total posters created: {sum(len(p) for p in poster_paths.values())}")
 
-# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #a39ebb72
+# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #f006b134
 def create_posters_for_score_folders(
     output_dir: Union[str, Path],
     image_index_df: pd.DataFrame,
@@ -1070,7 +1070,7 @@ def create_posters_for_score_folders(
     print_poster_creation_summary(poster_paths)
     return poster_paths
 
-# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #664eacdf
+# %% ../../nbs/14_inference.anomaly_score_organizer.ipynb #aa8e0163
 def predict_and_organize_by_score(
     model_path: Union[str, Path],  # Path to the trained model
     image_list_file: Union[str, Path],  # Text file with image paths (one per line)
@@ -1079,16 +1079,24 @@ def predict_and_organize_by_score(
     batch_id: Optional[str] = None,  # Optional batch identifier
     copy_mode: bool = True,  # If True, copy files; if False, move files
     save_metadata: bool = True,  # If True, save metadata JSON for each folder
+    create_posters: bool = True,  # If True, create posters for each score folder
+    images_per_poster: int = 20,  # Number of images per poster
+    image_size: Tuple[int, int] = (224, 224),  # Size of each image in the poster
+    grid_cols: int = 5,  # Number of columns in poster grid
+    annotate_with_index: bool = True,  # Whether to add index numbers to images in posters
+    font_size: int = 30,  # Font size for index annotations
     device: str = "auto",  # Device for inference ("auto", "cpu", "cuda")
     **kwargs  # Additional arguments passed to prediction function
 ) -> Dict[str, Any]:  # Returns combined prediction and organization results
     """
-    Complete workflow: Predict anomaly scores and organize images into score-based folders.
+    Complete workflow: Predict anomaly scores, organize images, and create indexed posters.
 
     This is the main function that combines:
-    1. Smart batch creation
-    2. Prediction using predict_image_list_from_file_enhanced
-    3. Image organization based on anomaly scores
+    1. Image index dataframe creation
+    2. Smart batch creation
+    3. Prediction using predict_image_list_from_file_enhanced
+    4. Image organization based on anomaly scores
+    5. Poster creation with index annotations (optional)
 
     Args:
         model_path: Path to the trained anomaly detection model
@@ -1101,16 +1109,35 @@ def predict_and_organize_by_score(
         batch_id: Optional identifier for this batch
         copy_mode: Whether to copy (True) or move (False) images
         save_metadata: Whether to save JSON metadata for each folder
+        create_posters: Whether to create image posters for each score folder
+        images_per_poster: Number of images to include in each poster
+        image_size: Size to resize each image to in posters
+        grid_cols: Number of columns in the poster grid
+        annotate_with_index: Whether to annotate images with their dataframe index
+        font_size: Font size for index annotations
         device: Device to use for inference
         **kwargs: Additional arguments (save_heatmap, heatmap_style, etc.)
 
     Returns:
         Dictionary containing:
+        - image_index_df: DataFrame with image indices
         - prediction_results: Full prediction results
         - organization_stats: Statistics about image organization
+        - poster_paths: Paths to created posters (if create_posters=True)
     """
-    print("\n🚀 PREDICT AND ORGANIZE BY ANOMALY SCORE")
+    print("\n🚀 PREDICT AND ORGANIZE BY ANOMALY SCORE WITH INDEXED POSTERS")
     print("="*70)
+
+    # Step 0: Create image index dataframe
+    print("\n📊 Step 0: Creating image index dataframe...")
+    image_index_df = create_image_index_dataframe(image_list_file)
+
+    # Save the dataframe
+    output_dir_path = Path(output_dir)
+    output_dir_path.mkdir(parents=True, exist_ok=True)
+    df_path = output_dir_path / "image_index.csv"
+    image_index_df.to_csv(df_path, index=False)
+    print(f"💾 Saved image index dataframe to {df_path}")
 
     # Step 1: Run predictions
     print("\n📊 Step 1: Running predictions...")
@@ -1130,8 +1157,10 @@ def predict_and_organize_by_score(
     if not prediction_results:
         print("⚠️  No prediction results to organize!")
         return {
+            'image_index_df': image_index_df,
             'prediction_results': prediction_output,
-            'organization_stats': None
+            'organization_stats': None,
+            'poster_paths': None
         }
 
     print(f"✅ Predictions complete: {len(prediction_results)} images processed")
@@ -1146,10 +1175,33 @@ def predict_and_organize_by_score(
         save_metadata=save_metadata
     )
 
+    # Step 3: Create posters (optional)
+    poster_paths = None
+    if create_posters:
+        print("\n🖼️  Step 3: Creating indexed posters...")
+        poster_paths = create_posters_for_score_folders(
+            output_dir=output_dir,
+            image_index_df=image_index_df,
+            score_thresholds=score_thresholds,
+            images_per_poster=images_per_poster,
+            image_size=image_size,
+            grid_cols=grid_cols,
+            annotate_with_index=annotate_with_index,
+            font_size=font_size
+        )
+
     print("\n🎉 WORKFLOW COMPLETE!")
     print("="*70)
+    print(f"📊 Image index dataframe: {df_path}")
+    print(f"📁 Organized images: {output_dir}")
+    if poster_paths:
+        total_posters = sum(len(p) for p in poster_paths.values())
+        print(f"🖼️  Created {total_posters} poster(s)")
 
     return {
+        'image_index_df': image_index_df,
+        'image_index_df_path': str(df_path),
         'prediction_results': prediction_output,
-        'organization_stats': organization_stats
+        'organization_stats': organization_stats,
+        'poster_paths': poster_paths
     }
